@@ -3,6 +3,7 @@ node_modules/
 
 # Build artifacts
 main.js
+dist/
 
 # OS generated files
 .DS_Store

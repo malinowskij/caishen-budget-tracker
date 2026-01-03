@@ -1,23 +1,25 @@
-import { Plugin, Notice, WorkspaceLeaf } from 'obsidian';
-import { BudgetPluginSettings, Transaction, getDefaultSettings } from './types';
+import { Plugin, Notice } from 'obsidian';
+import { BudgetPluginSettings, Transaction, getDefaultSettings, IBudgetPlugin, IDataService } from './types';
 import { DataService } from './data-service';
 import { TransactionModal } from './transaction-modal';
 import { BudgetSettingsTab } from './settings';
 import { BudgetDashboardView, DASHBOARD_VIEW_TYPE } from './dashboard-view';
 import { detectLocale, t } from './i18n';
 
-export default class BudgetTrackerPlugin extends Plugin {
-    settings: BudgetPluginSettings;
-    dataService: DataService;
+export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin {
+    settings!: BudgetPluginSettings;
+    dataService!: IDataService;
+    private _dataService!: DataService;
     private statusBarItem: HTMLElement | null = null;
 
     async onload() {
         await this.loadSettings();
 
         // Initialize data service
-        this.dataService = new DataService(this.app, this.settings);
+        this._dataService = new DataService(this.app, this.settings);
+        this.dataService = this._dataService;
         const savedData = await this.loadData();
-        await this.dataService.loadTransactions(savedData);
+        await this._dataService.loadTransactions(savedData);
 
         // Register dashboard view
         this.registerView(
@@ -83,15 +85,15 @@ export default class BudgetTrackerPlugin extends Plugin {
     async saveSettings() {
         await this.saveData({
             ...this.settings,
-            ...this.dataService.getDataForSave(),
+            ...this._dataService.getDataForSave(),
         });
-        this.dataService.updateSettings(this.settings);
+        this._dataService.updateSettings(this.settings);
     }
 
     async saveTransactionData() {
         await this.saveData({
             ...this.settings,
-            ...this.dataService.getDataForSave(),
+            ...this._dataService.getDataForSave(),
         });
     }
 
@@ -100,20 +102,17 @@ export default class BudgetTrackerPlugin extends Plugin {
             this.app,
             this.settings,
             async (transactionData) => {
-                await this.dataService.addTransaction(transactionData);
+                await this._dataService.addTransaction(transactionData);
                 await this.saveTransactionData();
                 this.updateStatusBar();
                 this.refreshDashboard();
                 const trans = t(this.settings.locale);
                 const typeLabel = transactionData.type === 'income' ? trans.income : trans.expense;
                 new Notice(`${trans.noticeTransactionAdded} ${typeLabel}: ${transactionData.amount} ${transactionData.currency}`);
-            }
+            },
+            undefined,
+            defaultType
         );
-
-        // Set default type if specified
-        if (defaultType) {
-            (modal as any).type = defaultType;
-        }
 
         modal.open();
     }
@@ -150,7 +149,7 @@ export default class BudgetTrackerPlugin extends Plugin {
             return;
         }
 
-        const summary = this.dataService.getCurrentMonthSummary();
+        const summary = this._dataService.getCurrentMonthSummary();
         const sign = summary.balance >= 0 ? '+' : '';
         const emoji = summary.balance >= 0 ? '💚' : '🔴';
         this.statusBarItem.setText(`${emoji} ${sign}${summary.balance.toFixed(2)} ${this.settings.defaultCurrency}`);
@@ -161,7 +160,7 @@ export default class BudgetTrackerPlugin extends Plugin {
         for (const leaf of leaves) {
             const view = leaf.view;
             if (view instanceof BudgetDashboardView) {
-                view.render();
+                view.refresh();
             }
         }
     }

@@ -1,4 +1,21 @@
+import { App } from 'obsidian';
 import { Locale, t } from './i18n';
+
+export interface IDataService {
+    getCurrentMonthSummary(): MonthlySummary;
+    getCategoryBreakdown(year: number, month: number): Array<{ category: string; name: string; amount: number; color: string; icon: string }>;
+    getMonthlyTrends(months: number): Array<{ year: number; month: number; income: number; expense: number; balance: number }>;
+    getRecentTransactions(limit: number): Transaction[];
+    addTransaction(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction>;
+}
+
+export interface IBudgetPlugin {
+    settings: BudgetPluginSettings;
+    dataService: IDataService;
+    openTransactionModal(defaultType?: 'income' | 'expense'): void;
+    saveSettings(): Promise<void>;
+    updateStatusBar(): void;
+}
 
 // Transaction represents a single income or expense entry
 export interface Transaction {
