@@ -19,8 +19,6 @@
     let amount: number = editTransaction?.amount ?? 0;
     let category: string = editTransaction?.category ?? "";
     let description: string = editTransaction?.description ?? "";
-    let currency: string =
-        editTransaction?.currency ?? settings.defaultCurrency;
 
     $: filteredCategories = settings.categories.filter(
         (c) => c.type === type || c.type === "both",
@@ -43,7 +41,7 @@
             amount,
             category,
             description,
-            currency,
+            currency: settings.defaultCurrency,
         });
     }
 </script>
@@ -89,11 +87,7 @@
                 placeholder="0.00"
                 bind:value={amount}
             />
-            <select bind:value={currency}>
-                {#each settings.currencies as curr}
-                    <option value={curr}>{curr}</option>
-                {/each}
-            </select>
+            <span class="currency-label">{settings.defaultCurrency}</span>
         </div>
     </div>
 

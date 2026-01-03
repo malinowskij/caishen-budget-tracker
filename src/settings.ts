@@ -51,25 +51,11 @@ export class BudgetSettingsTab extends PluginSettingTab {
         new Setting(containerEl)
             .setName(trans.defaultCurrency)
             .setDesc(trans.defaultCurrencyDesc)
-            .addDropdown(dropdown => {
-                for (const curr of this.plugin.settings.currencies) {
-                    dropdown.addOption(curr, curr);
-                }
-                dropdown.setValue(this.plugin.settings.defaultCurrency)
-                    .onChange(async (value) => {
-                        this.plugin.settings.defaultCurrency = value;
-                        await this.plugin.saveSettings();
-                    });
-            });
-
-        new Setting(containerEl)
-            .setName(trans.availableCurrencies)
-            .setDesc(trans.availableCurrenciesDesc)
             .addText(text => text
-                .setPlaceholder('USD,EUR,GBP,PLN')
-                .setValue(this.plugin.settings.currencies.join(','))
+                .setPlaceholder('PLN')
+                .setValue(this.plugin.settings.defaultCurrency)
                 .onChange(async (value) => {
-                    this.plugin.settings.currencies = value.split(',').map(c => c.trim()).filter(c => c);
+                    this.plugin.settings.defaultCurrency = value.toUpperCase() || 'PLN';
                     await this.plugin.saveSettings();
                 }));
 
