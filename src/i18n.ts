@@ -1,0 +1,349 @@
+// Internationalization (i18n) system for Budget Tracker plugin
+
+export type Locale = 'en' | 'pl';
+
+export interface Translations {
+    // General
+    pluginName: string;
+    settings: string;
+    save: string;
+    cancel: string;
+    confirm: string;
+    delete: string;
+    edit: string;
+    add: string;
+    refresh: string;
+
+    // Transaction types
+    income: string;
+    expense: string;
+
+    // Transaction modal
+    addTransaction: string;
+    editTransaction: string;
+    newTransaction: string;
+    transactionType: string;
+    transactionTypeDesc: string;
+    date: string;
+    dateDesc: string;
+    amount: string;
+    amountDesc: string;
+    category: string;
+    categoryDesc: string;
+    description: string;
+    descriptionDesc: string;
+    descriptionPlaceholder: string;
+    saveChanges: string;
+
+    // Dashboard
+    budgetDashboard: string;
+    addExpense: string;
+    addIncome: string;
+    incomes: string;
+    expenses: string;
+    balance: string;
+    categoryBreakdown: string;
+    trendLastMonths: string;
+    recentTransactions: string;
+    noExpensesThisMonth: string;
+    noDataToDisplay: string;
+    noTransactionsYet: string;
+
+    // Settings
+    settingsTitle: string;
+    general: string;
+    budgetFolder: string;
+    budgetFolderDesc: string;
+    defaultCurrency: string;
+    defaultCurrencyDesc: string;
+    availableCurrencies: string;
+    availableCurrenciesDesc: string;
+    showBalanceInStatusBar: string;
+    showBalanceInStatusBarDesc: string;
+    language: string;
+    languageDesc: string;
+    expenseCategories: string;
+    incomeCategories: string;
+    addExpenseCategory: string;
+    addIncomeCategory: string;
+    reset: string;
+    restoreDefaultCategories: string;
+    restoreDefaultCategoriesDesc: string;
+    restoreDefaults: string;
+    restoredDefaultCategories: string;
+    addedNewCategory: string;
+    deletedCategory: string;
+    categoryName: string;
+    categoryId: string;
+
+    // Confirmation
+    confirmTitle: string;
+
+    // Notices
+    noticeTransactionAdded: string;
+
+    // Month file
+    budgetMonthTitle: string;
+    summary: string;
+    transactions: string;
+    noTransactionsInMonth: string;
+    type: string;
+
+    // Month names
+    months: string[];
+
+    // Default categories
+    defaultCategories: {
+        food: string;
+        transport: string;
+        entertainment: string;
+        shopping: string;
+        bills: string;
+        health: string;
+        education: string;
+        otherExpense: string;
+        salary: string;
+        freelance: string;
+        investment: string;
+        gift: string;
+        otherIncome: string;
+        newExpense: string;
+        newIncome: string;
+    };
+}
+
+export const translations: Record<Locale, Translations> = {
+    en: {
+        // General
+        pluginName: 'Budget Tracker',
+        settings: 'Settings',
+        save: 'Save',
+        cancel: 'Cancel',
+        confirm: 'Confirm',
+        delete: 'Delete',
+        edit: 'Edit',
+        add: 'Add',
+        refresh: 'Refresh',
+
+        // Transaction types
+        income: 'Income',
+        expense: 'Expense',
+
+        // Transaction modal
+        addTransaction: 'Add Transaction',
+        editTransaction: '✏️ Edit Transaction',
+        newTransaction: '➕ New Transaction',
+        transactionType: 'Type',
+        transactionTypeDesc: 'Income or expense?',
+        date: 'Date',
+        dateDesc: 'Transaction date',
+        amount: 'Amount',
+        amountDesc: 'Transaction value',
+        category: 'Category',
+        categoryDesc: 'Select category',
+        description: 'Description',
+        descriptionDesc: 'Optional transaction description',
+        descriptionPlaceholder: 'e.g. Grocery shopping',
+        saveChanges: 'Save Changes',
+
+        // Dashboard
+        budgetDashboard: '💰 Budget Dashboard',
+        addExpense: '➕ Add Expense',
+        addIncome: '💵 Add Income',
+        incomes: '💚 Income',
+        expenses: '🔴 Expenses',
+        balance: '📊 Balance',
+        categoryBreakdown: '📂 Expenses by Category',
+        trendLastMonths: '📈 Trend (last 6 months)',
+        recentTransactions: '📝 Recent Transactions',
+        noExpensesThisMonth: 'No expenses this month.',
+        noDataToDisplay: 'No data to display.',
+        noTransactionsYet: 'No transactions yet. Add your first one!',
+
+        // Settings
+        settingsTitle: '💰 Budget Tracker - Settings',
+        general: '⚙️ General',
+        budgetFolder: 'Budget folder',
+        budgetFolderDesc: 'Folder where transaction files will be saved',
+        defaultCurrency: 'Default currency',
+        defaultCurrencyDesc: 'Currency used by default for new transactions',
+        availableCurrencies: 'Available currencies',
+        availableCurrenciesDesc: 'Comma-separated list of currencies (e.g. USD,EUR,GBP)',
+        showBalanceInStatusBar: 'Show balance in status bar',
+        showBalanceInStatusBarDesc: 'Display current month balance in the bottom bar',
+        language: 'Language',
+        languageDesc: 'Plugin interface language',
+        expenseCategories: '📂 Expense Categories',
+        incomeCategories: '📂 Income Categories',
+        addExpenseCategory: '➕ Add expense category',
+        addIncomeCategory: '➕ Add income category',
+        reset: '🔄 Reset',
+        restoreDefaultCategories: 'Restore default categories',
+        restoreDefaultCategoriesDesc: 'Warning: This will remove all custom categories!',
+        restoreDefaults: 'Restore Defaults',
+        restoredDefaultCategories: 'Default categories restored',
+        addedNewCategory: 'New category added - edit it above',
+        deletedCategory: 'Deleted category:',
+        categoryName: 'Name',
+        categoryId: 'ID:',
+
+        // Confirmation
+        confirmTitle: '⚠️ Confirm',
+
+        // Notices
+        noticeTransactionAdded: '✅ Added',
+
+        // Month file
+        budgetMonthTitle: '📊 Budget:',
+        summary: '📈 Summary',
+        transactions: '📝 Transactions',
+        noTransactionsInMonth: 'No transactions this month. Use the "Add Transaction" command to add your first one!',
+        type: 'Type',
+
+        // Month names
+        months: ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'],
+
+        // Default categories
+        defaultCategories: {
+            food: 'Food',
+            transport: 'Transport',
+            entertainment: 'Entertainment',
+            shopping: 'Shopping',
+            bills: 'Bills',
+            health: 'Health',
+            education: 'Education',
+            otherExpense: 'Other expenses',
+            salary: 'Salary',
+            freelance: 'Freelance',
+            investment: 'Investments',
+            gift: 'Gift',
+            otherIncome: 'Other income',
+            newExpense: 'New expense',
+            newIncome: 'New income',
+        },
+    },
+
+    pl: {
+        // General
+        pluginName: 'Budget Tracker',
+        settings: 'Ustawienia',
+        save: 'Zapisz',
+        cancel: 'Anuluj',
+        confirm: 'Potwierdź',
+        delete: 'Usuń',
+        edit: 'Edytuj',
+        add: 'Dodaj',
+        refresh: 'Odśwież',
+
+        // Transaction types
+        income: 'Przychód',
+        expense: 'Wydatek',
+
+        // Transaction modal
+        addTransaction: 'Dodaj transakcję',
+        editTransaction: '✏️ Edytuj transakcję',
+        newTransaction: '➕ Nowa transakcja',
+        transactionType: 'Typ',
+        transactionTypeDesc: 'Przychód czy wydatek?',
+        date: 'Data',
+        dateDesc: 'Data transakcji',
+        amount: 'Kwota',
+        amountDesc: 'Wartość transakcji',
+        category: 'Kategoria',
+        categoryDesc: 'Wybierz kategorię',
+        description: 'Opis',
+        descriptionDesc: 'Opcjonalny opis transakcji',
+        descriptionPlaceholder: 'np. Zakupy w Biedronce',
+        saveChanges: 'Zapisz zmiany',
+
+        // Dashboard
+        budgetDashboard: '💰 Dashboard Budżetu',
+        addExpense: '➕ Dodaj wydatek',
+        addIncome: '💵 Dodaj przychód',
+        incomes: '💚 Przychody',
+        expenses: '🔴 Wydatki',
+        balance: '📊 Bilans',
+        categoryBreakdown: '📂 Wydatki wg kategorii',
+        trendLastMonths: '📈 Trend (ostatnie 6 miesięcy)',
+        recentTransactions: '📝 Ostatnie transakcje',
+        noExpensesThisMonth: 'Brak wydatków w tym miesiącu.',
+        noDataToDisplay: 'Brak danych do wyświetlenia.',
+        noTransactionsYet: 'Brak transakcji. Dodaj pierwszą!',
+
+        // Settings
+        settingsTitle: '💰 Budget Tracker - Ustawienia',
+        general: '⚙️ Ogólne',
+        budgetFolder: 'Folder budżetu',
+        budgetFolderDesc: 'Folder gdzie będą zapisywane pliki z transakcjami',
+        defaultCurrency: 'Domyślna waluta',
+        defaultCurrencyDesc: 'Waluta używana domyślnie dla nowych transakcji',
+        availableCurrencies: 'Dostępne waluty',
+        availableCurrenciesDesc: 'Lista walut oddzielonych przecinkami (np. PLN,EUR,USD)',
+        showBalanceInStatusBar: 'Pokaż bilans w pasku statusu',
+        showBalanceInStatusBarDesc: 'Wyświetlaj bieżący bilans miesiąca w dolnym pasku',
+        language: 'Język',
+        languageDesc: 'Język interfejsu wtyczki',
+        expenseCategories: '📂 Kategorie wydatków',
+        incomeCategories: '📂 Kategorie przychodów',
+        addExpenseCategory: '➕ Dodaj kategorię wydatków',
+        addIncomeCategory: '➕ Dodaj kategorię przychodów',
+        reset: '🔄 Reset',
+        restoreDefaultCategories: 'Przywróć domyślne kategorie',
+        restoreDefaultCategoriesDesc: 'Uwaga: To usunie wszystkie niestandardowe kategorie!',
+        restoreDefaults: 'Przywróć domyślne',
+        restoredDefaultCategories: 'Przywrócono domyślne kategorie',
+        addedNewCategory: 'Dodano nową kategorię - edytuj ją powyżej',
+        deletedCategory: 'Usunięto kategorię:',
+        categoryName: 'Nazwa',
+        categoryId: 'ID:',
+
+        // Confirmation
+        confirmTitle: '⚠️ Potwierdź',
+
+        // Notices
+        noticeTransactionAdded: '✅ Dodano',
+
+        // Month file
+        budgetMonthTitle: '📊 Budżet:',
+        summary: '📈 Podsumowanie',
+        transactions: '📝 Transakcje',
+        noTransactionsInMonth: 'Brak transakcji w tym miesiącu. Użyj komendy "Dodaj transakcję" aby dodać pierwszą!',
+        type: 'Typ',
+
+        // Month names
+        months: ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
+            'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'],
+
+        // Default categories
+        defaultCategories: {
+            food: 'Jedzenie',
+            transport: 'Transport',
+            entertainment: 'Rozrywka',
+            shopping: 'Zakupy',
+            bills: 'Rachunki',
+            health: 'Zdrowie',
+            education: 'Edukacja',
+            otherExpense: 'Inne wydatki',
+            salary: 'Wynagrodzenie',
+            freelance: 'Freelance',
+            investment: 'Inwestycje',
+            gift: 'Prezent',
+            otherIncome: 'Inne przychody',
+            newExpense: 'Nowy wydatek',
+            newIncome: 'Nowy przychód',
+        },
+    },
+};
+
+// Get translations for a locale
+export function t(locale: Locale): Translations {
+    return translations[locale];
+}
+
+// Detect system locale (defaults to English)
+export function detectLocale(): Locale {
+    const lang = navigator.language.toLowerCase();
+    if (lang.startsWith('pl')) return 'pl';
+    return 'en';
+}

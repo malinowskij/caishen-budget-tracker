@@ -1,0 +1,28 @@
+{
+    "name": "obsidian-budget-tracker",
+    "version": "1.0.0",
+    "description": "Budget tracking plugin for Obsidian",
+    "main": "main.js",
+    "type": "module",
+    "scripts": {
+        "dev": "node esbuild.config.mjs",
+        "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+        "lint": "eslint ."
+    },
+    "keywords": [
+        "obsidian",
+        "budget",
+        "finance",
+        "tracking"
+    ],
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^16.11.6",
+        "esbuild": "0.25.5",
+        "tslib": "2.4.0",
+        "typescript": "^5.8.3"
+    },
+    "dependencies": {
+        "obsidian": "latest"
+    }
+}
