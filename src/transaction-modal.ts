@@ -5,6 +5,7 @@ import TransactionForm from './components/TransactionForm.svelte';
 export class TransactionModal extends Modal {
     private settings: BudgetPluginSettings;
     private onSubmit: (transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => void;
+    private onDelete: (() => void) | undefined;
     private editTransaction: Transaction | null;
     private component: TransactionForm | null = null;
     private defaultType: 'income' | 'expense';
@@ -14,13 +15,15 @@ export class TransactionModal extends Modal {
         settings: BudgetPluginSettings,
         onSubmit: (transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => void,
         editTransaction?: Transaction,
-        defaultType?: 'income' | 'expense'
+        defaultType?: 'income' | 'expense',
+        onDelete?: () => void
     ) {
         super(app);
         this.settings = settings;
         this.onSubmit = onSubmit;
         this.editTransaction = editTransaction ?? null;
         this.defaultType = defaultType ?? 'expense';
+        this.onDelete = onDelete;
     }
 
     onOpen() {
@@ -32,18 +35,20 @@ export class TransactionModal extends Modal {
             props: {
                 settings: this.settings,
                 editTransaction: this.editTransaction,
+                defaultType: this.defaultType,
                 onSubmit: (transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => {
                     this.onSubmit(transaction);
                     this.close();
                 },
                 onClose: () => this.close(),
+                onDelete: this.onDelete ? () => {
+                    if (this.onDelete) {
+                        this.onDelete();
+                    }
+                    this.close();
+                } : undefined,
             },
         });
-
-        // Set default type if specified
-        if (this.defaultType && !this.editTransaction) {
-            (this.component as any).$set({ type: this.defaultType });
-        }
     }
 
     onClose() {
@@ -51,46 +56,6 @@ export class TransactionModal extends Modal {
             this.component.$destroy();
             this.component = null;
         }
-        const { contentEl } = this;
-        contentEl.empty();
-    }
-}
-
-export class ConfirmModal extends Modal {
-    private message: string;
-    private onConfirm: () => void;
-
-    constructor(app: App, message: string, onConfirm: () => void) {
-        super(app);
-        this.message = message;
-        this.onConfirm = onConfirm;
-    }
-
-    onOpen() {
-        const { contentEl } = this;
-        contentEl.createEl('h2', { text: '⚠️ Confirm' });
-        contentEl.createEl('p', { text: this.message });
-
-        const buttonContainer = contentEl.createDiv('modal-button-container');
-        buttonContainer.style.marginTop = '20px';
-        buttonContainer.style.display = 'flex';
-        buttonContainer.style.justifyContent = 'flex-end';
-        buttonContainer.style.gap = '10px';
-
-        const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
-        cancelBtn.onclick = () => this.close();
-
-        const confirmBtn = buttonContainer.createEl('button', {
-            text: 'Confirm',
-            cls: 'mod-warning'
-        });
-        confirmBtn.onclick = () => {
-            this.onConfirm();
-            this.close();
-        };
-    }
-
-    onClose() {
         const { contentEl } = this;
         contentEl.empty();
     }

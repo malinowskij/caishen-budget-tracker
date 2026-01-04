@@ -1,6 +1,6 @@
 import { App, TFile } from 'obsidian';
-import { Transaction, MonthlySummary, BudgetPluginSettings } from './types';
-import { Locale, t } from './i18n';
+import type { Transaction, MonthlySummary, BudgetPluginSettings, TransactionFilter } from './types';
+import { t } from './i18n';
 
 export class DataService {
     private app: App;
@@ -84,6 +84,30 @@ export class DataService {
         return true;
     }
 
+    // Get filtered transactions
+    getFilteredTransactions(filter: TransactionFilter): Transaction[] {
+        return this.transactions.filter(t => {
+            // Date range filter
+            if (filter.dateFrom && t.date < filter.dateFrom) return false;
+            if (filter.dateTo && t.date > filter.dateTo) return false;
+
+            // Category filter
+            if (filter.category && t.category !== filter.category) return false;
+
+            // Type filter
+            if (filter.type && filter.type !== 'all' && t.type !== filter.type) return false;
+
+            // Search filter (case insensitive)
+            if (filter.search) {
+                const searchLower = filter.search.toLowerCase();
+                const descMatch = t.description?.toLowerCase().includes(searchLower) ?? false;
+                const catMatch = t.category.toLowerCase().includes(searchLower);
+                if (!descMatch && !catMatch) return false;
+            }
+
+            return true;
+        }).sort((a, b) => b.date.localeCompare(a.date)); // Sort by date descending
+    }
     // Get transactions for a specific month
     getTransactionsForMonth(year: number, month: number): Transaction[] {
         return this.transactions.filter(t => {

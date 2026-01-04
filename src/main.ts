@@ -1,5 +1,6 @@
 import { Plugin, Notice } from 'obsidian';
-import { BudgetPluginSettings, Transaction, getDefaultSettings, IBudgetPlugin, IDataService } from './types';
+import type { BudgetPluginSettings, Transaction, IBudgetPlugin, IDataService } from './types';
+import { getDefaultSettings } from './types';
 import { DataService } from './data-service';
 import { TransactionModal } from './transaction-modal';
 import { BudgetSettingsTab } from './settings';
@@ -68,7 +69,52 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         // Settings tab
         this.addSettingTab(new BudgetSettingsTab(this.app, this));
 
+        // Process recurring transactions
+        await this.processRecurringTransactions();
+
         console.log('Budget Tracker plugin loaded');
+    }
+
+    async processRecurringTransactions() {
+        const now = new Date();
+        const currentDay = now.getDate();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        const recurring = this.settings.recurringTransactions || [];
+        let hasChanges = false;
+
+        for (const item of recurring) {
+            if (!item.isActive) continue;
+
+            // Check if already processed this month
+            if (item.lastProcessed?.startsWith(currentMonth)) continue;
+
+            // Check if today is the day or past the day this month
+            if (currentDay >= item.dayOfMonth) {
+                // Add transaction
+                const transactionDate = `${currentMonth}-${String(item.dayOfMonth).padStart(2, '0')}`;
+
+                await this._dataService.addTransaction({
+                    date: transactionDate,
+                    amount: item.amount,
+                    type: item.type,
+                    category: item.category,
+                    description: `🔄 ${item.name}`,
+                    currency: this.settings.defaultCurrency,
+                });
+
+                // Mark as processed
+                item.lastProcessed = now.toISOString().split('T')[0];
+                hasChanges = true;
+
+                console.log(`Auto-added recurring: ${item.name}`);
+            }
+        }
+
+        if (hasChanges) {
+            await this.saveTransactionData();
+            this.updateStatusBar();
+        }
     }
 
     onunload() {
@@ -82,15 +128,16 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         this.settings = Object.assign({}, defaultSettings, savedData);
     }
 
-    async saveSettings() {
-        await this.saveData({
-            ...this.settings,
-            ...this._dataService.getDataForSave(),
-        });
+    async saveSettings(): Promise<void> {
+        await this.saveAllData();
         this._dataService.updateSettings(this.settings);
     }
 
-    async saveTransactionData() {
+    async saveTransactionData(): Promise<void> {
+        await this.saveAllData();
+    }
+
+    private async saveAllData(): Promise<void> {
         await this.saveData({
             ...this.settings,
             ...this._dataService.getDataForSave(),
@@ -112,6 +159,33 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
             },
             undefined,
             defaultType
+        );
+
+        modal.open();
+    }
+
+    openEditTransactionModal(transaction: Transaction) {
+        const modal = new TransactionModal(
+            this.app,
+            this.settings,
+            async (transactionData) => {
+                await this._dataService.updateTransaction(transaction.id, transactionData);
+                await this.saveTransactionData();
+                this.updateStatusBar();
+                this.refreshDashboard();
+                const trans = t(this.settings.locale);
+                new Notice(`✅ ${trans.saveChanges}`);
+            },
+            transaction,
+            undefined,
+            async () => {
+                await this._dataService.deleteTransaction(transaction.id);
+                await this.saveTransactionData();
+                this.updateStatusBar();
+                this.refreshDashboard();
+                const trans = t(this.settings.locale);
+                new Notice(`🗑️ ${trans.delete}`);
+            }
         );
 
         modal.open();

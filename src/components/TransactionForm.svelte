@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { App, Modal } from "obsidian";
-    import type { BudgetPluginSettings, Transaction, Category } from "../types";
+    import type { BudgetPluginSettings, Transaction } from "../types";
     import { t } from "../i18n";
 
     export let settings: BudgetPluginSettings;
@@ -8,17 +7,20 @@
         transaction: Omit<Transaction, "id" | "createdAt" | "updatedAt">,
     ) => void;
     export let onClose: () => void;
+    export let onDelete: (() => void) | undefined = undefined;
     export let editTransaction: Transaction | null = null;
+    export let defaultType: "income" | "expense" = "expense";
 
     $: trans = t(settings.locale);
 
-    // Form state
-    let type: "income" | "expense" = editTransaction?.type ?? "expense";
+    // Form state - use editTransaction type if editing, otherwise use defaultType
+    let type: "income" | "expense" = editTransaction?.type ?? defaultType;
     let date: string =
         editTransaction?.date ?? new Date().toISOString().split("T")[0] ?? "";
     let amount: number = editTransaction?.amount ?? 0;
     let category: string = editTransaction?.category ?? "";
     let description: string = editTransaction?.description ?? "";
+    let showDeleteConfirm = false;
 
     $: filteredCategories = settings.categories.filter(
         (c) => c.type === type || c.type === "both",
@@ -43,6 +45,12 @@
             description,
             currency: settings.defaultCurrency,
         });
+    }
+
+    function handleDelete() {
+        if (onDelete) {
+            onDelete();
+        }
     }
 </script>
 
@@ -120,6 +128,29 @@
         </div>
     </div>
 
+    {#if editTransaction && onDelete}
+        {#if showDeleteConfirm}
+            <div class="delete-confirm">
+                <p>{trans.confirmDeleteTransaction}</p>
+                <div class="delete-confirm-buttons">
+                    <button on:click={() => (showDeleteConfirm = false)}
+                        >{trans.cancel}</button
+                    >
+                    <button class="mod-warning" on:click={handleDelete}
+                        >{trans.delete}</button
+                    >
+                </div>
+            </div>
+        {:else}
+            <button
+                class="delete-button"
+                on:click={() => (showDeleteConfirm = true)}
+            >
+                🗑️ {trans.deleteTransaction}
+            </button>
+        {/if}
+    {/if}
+
     <div class="modal-button-container">
         <button on:click={onClose}>{trans.cancel}</button>
         <button class="mod-cta" on:click={handleSubmit}>
@@ -147,5 +178,30 @@
         display: flex;
         justify-content: flex-end;
         gap: 10px;
+    }
+
+    .delete-button {
+        margin-top: 16px;
+        width: 100%;
+        background: var(--background-modifier-error);
+        color: var(--text-on-accent);
+    }
+
+    .delete-confirm {
+        margin-top: 16px;
+        padding: 12px;
+        background: var(--background-modifier-error-hover);
+        border-radius: 8px;
+    }
+
+    .delete-confirm p {
+        margin: 0 0 12px 0;
+        color: var(--text-error);
+    }
+
+    .delete-confirm-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
     }
 </style>

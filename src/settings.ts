@@ -1,7 +1,10 @@
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
-import BudgetTrackerPlugin from './main';
-import { Category, getDefaultCategories } from './types';
-import { Locale, t, translations } from './i18n';
+import type BudgetTrackerPlugin from './main';
+import type { Category, RecurringTransaction } from './types';
+import { getDefaultCategories } from './types';
+import type { Locale, Translations } from './i18n';
+import { t, translations } from './i18n';
+import { RecurringModal } from './recurring-modal';
 
 export class BudgetSettingsTab extends PluginSettingTab {
     plugin: BudgetTrackerPlugin;
@@ -92,6 +95,10 @@ export class BudgetSettingsTab extends PluginSettingTab {
                 .setButtonText(trans.addIncomeCategory)
                 .onClick(() => this.addNewCategory('income')));
 
+        // Recurring Transactions section
+        containerEl.createEl('h2', { text: trans.recurringTransactions });
+        this.renderRecurringList(containerEl, trans);
+
         // Reset to defaults
         containerEl.createEl('h2', { text: trans.reset });
 
@@ -143,6 +150,20 @@ export class BudgetSettingsTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
+            // Budget limit (only for expense categories)
+            if (category.type === 'expense') {
+                setting.addText(text => {
+                    text.inputEl.style.width = '80px';
+                    text.inputEl.type = 'number';
+                    text.setPlaceholder('0')
+                        .setValue((category.budgetLimit ?? 0).toString())
+                        .onChange(async (value) => {
+                            category.budgetLimit = parseFloat(value) || 0;
+                            await this.plugin.saveSettings();
+                        });
+                });
+            }
+
             // Delete button
             setting.addButton(button => button
                 .setIcon('trash')
@@ -174,5 +195,79 @@ export class BudgetSettingsTab extends PluginSettingTab {
         await this.plugin.saveSettings();
         this.display();
         new Notice(trans.addedNewCategory);
+    }
+
+    private renderRecurringList(containerEl: HTMLElement, trans: Translations) {
+        const recurring = this.plugin.settings.recurringTransactions || [];
+
+        for (const item of recurring) {
+            const cat = this.plugin.settings.categories.find(c => c.id === item.category);
+            const setting = new Setting(containerEl)
+                .setName(`${cat?.icon ?? '📦'} ${item.name}`)
+                .setDesc(`${trans.dayOfMonth} ${item.dayOfMonth} • ${item.type === 'income' ? '+' : '-'}${item.amount} ${this.plugin.settings.defaultCurrency}`);
+
+            // Toggle active
+            setting.addToggle(toggle => toggle
+                .setValue(item.isActive)
+                .onChange(async (value) => {
+                    item.isActive = value;
+                    await this.plugin.saveSettings();
+                }));
+
+            // Edit button
+            setting.addButton(button => button
+                .setIcon('pencil')
+                .onClick(() => {
+                    const modal = new RecurringModal(
+                        this.app,
+                        this.plugin.settings,
+                        async (updatedItem) => {
+                            Object.assign(item, updatedItem);
+                            await this.plugin.saveSettings();
+                            this.display();
+                        },
+                        item
+                    );
+                    modal.open();
+                }));
+
+            // Delete button
+            setting.addButton(button => button
+                .setIcon('trash')
+                .setWarning()
+                .onClick(async () => {
+                    const index = this.plugin.settings.recurringTransactions.findIndex(r => r.id === item.id);
+                    if (index > -1) {
+                        this.plugin.settings.recurringTransactions.splice(index, 1);
+                        await this.plugin.saveSettings();
+                        this.display();
+                    }
+                }));
+        }
+
+        // Add new recurring button
+        new Setting(containerEl)
+            .addButton(button => button
+                .setButtonText(trans.addRecurring)
+                .setCta()
+                .onClick(() => {
+                    const modal = new RecurringModal(
+                        this.app,
+                        this.plugin.settings,
+                        async (newItem) => {
+                            const fullItem: RecurringTransaction = {
+                                ...newItem,
+                                id: `recurring-${Date.now()}`,
+                            };
+                            if (!this.plugin.settings.recurringTransactions) {
+                                this.plugin.settings.recurringTransactions = [];
+                            }
+                            this.plugin.settings.recurringTransactions.push(fullItem);
+                            await this.plugin.saveSettings();
+                            this.display();
+                        }
+                    );
+                    modal.open();
+                }));
     }
 }

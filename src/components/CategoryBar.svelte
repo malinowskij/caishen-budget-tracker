@@ -23,3 +23,36 @@
         ></div>
     </div>
 </div>
+
+<style>
+    .category-row {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .category-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .category-amount {
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .category-bar-container {
+        height: 8px;
+        background: var(--background-secondary);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .category-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        min-width: 2px;
+    }
+</style>

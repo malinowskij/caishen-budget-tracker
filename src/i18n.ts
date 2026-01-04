@@ -49,6 +49,36 @@ export interface Translations {
     noDataToDisplay: string;
     noTransactionsYet: string;
 
+    // Filters
+    search: string;
+    searchPlaceholder: string;
+    all: string;
+    allCategories: string;
+    dateFrom: string;
+    dateTo: string;
+    clearFilters: string;
+    showFilters: string;
+    hideFilters: string;
+    exportCSV: string;
+    exportJSON: string;
+
+    // Budget progress
+    budgetProgress: string;
+    budgetExceeded: string;
+    budgetWarning: string;
+    budgetRemaining: string;
+    noBudgetsSet: string;
+    budgetLimit: string;
+    budgetLimitDesc: string;
+
+    // Recurring transactions
+    recurringTransactions: string;
+    noRecurringTransactions: string;
+    addRecurring: string;
+    editRecurring: string;
+    dayOfMonth: string;
+    recurringName: string;
+
     // Settings
     settingsTitle: string;
     general: string;
@@ -78,6 +108,8 @@ export interface Translations {
 
     // Confirmation
     confirmTitle: string;
+    confirmDeleteTransaction: string;
+    deleteTransaction: string;
 
     // Notices
     noticeTransactionAdded: string;
@@ -160,6 +192,36 @@ export const translations: Record<Locale, Translations> = {
         noDataToDisplay: 'No data to display.',
         noTransactionsYet: 'No transactions yet. Add your first one!',
 
+        // Filters
+        search: 'Search',
+        searchPlaceholder: 'Search descriptions...',
+        all: 'All',
+        allCategories: 'All categories',
+        dateFrom: 'From',
+        dateTo: 'To',
+        clearFilters: 'Clear',
+        showFilters: 'Show Filters',
+        hideFilters: 'Hide Filters',
+        exportCSV: 'Export CSV',
+        exportJSON: 'Export JSON',
+
+        // Budget progress
+        budgetProgress: '🎯 Monthly Budgets',
+        budgetExceeded: 'Budget exceeded!',
+        budgetWarning: 'Approaching limit',
+        budgetRemaining: 'Remaining',
+        noBudgetsSet: 'No budget limits set. Configure them in category settings.',
+        budgetLimit: 'Monthly limit',
+        budgetLimitDesc: 'Set a monthly spending limit (0 = no limit)',
+
+        // Recurring transactions
+        recurringTransactions: '🔄 Recurring Transactions',
+        noRecurringTransactions: 'No recurring transactions. Add one below.',
+        addRecurring: 'Add Recurring Transaction',
+        editRecurring: 'Edit Recurring Transaction',
+        dayOfMonth: 'Day of month',
+        recurringName: 'Name',
+
         // Settings
         settingsTitle: '💰 Budget Tracker - Settings',
         general: '⚙️ General',
@@ -189,6 +251,8 @@ export const translations: Record<Locale, Translations> = {
 
         // Confirmation
         confirmTitle: '⚠️ Confirm',
+        confirmDeleteTransaction: 'Are you sure you want to delete this transaction?',
+        deleteTransaction: 'Delete Transaction',
 
         // Notices
         noticeTransactionAdded: '✅ Added',
@@ -271,6 +335,36 @@ export const translations: Record<Locale, Translations> = {
         noDataToDisplay: 'Brak danych do wyświetlenia.',
         noTransactionsYet: 'Brak transakcji. Dodaj pierwszą!',
 
+        // Filters
+        search: 'Szukaj',
+        searchPlaceholder: 'Szukaj w opisach...',
+        all: 'Wszystkie',
+        allCategories: 'Wszystkie kategorie',
+        dateFrom: 'Od',
+        dateTo: 'Do',
+        clearFilters: 'Wyczyść',
+        showFilters: 'Pokaż filtry',
+        hideFilters: 'Ukryj filtry',
+        exportCSV: 'Eksport CSV',
+        exportJSON: 'Eksport JSON',
+
+        // Budget progress
+        budgetProgress: '🎯 Budżety miesięczne',
+        budgetExceeded: 'Budżet przekroczony!',
+        budgetWarning: 'Zbliżasz się do limitu',
+        budgetRemaining: 'Pozostało',
+        noBudgetsSet: 'Brak ustawionych limitów. Skonfiguruj je w ustawieniach kategorii.',
+        budgetLimit: 'Limit miesięczny',
+        budgetLimitDesc: 'Ustaw miesięczny limit wydatków (0 = brak limitu)',
+
+        // Recurring transactions
+        recurringTransactions: '🔄 Transakcje cykliczne',
+        noRecurringTransactions: 'Brak transakcji cyklicznych. Dodaj jedną poniżej.',
+        addRecurring: 'Dodaj transakcję cykliczną',
+        editRecurring: 'Edytuj transakcję cykliczną',
+        dayOfMonth: 'Dzień miesiąca',
+        recurringName: 'Nazwa',
+
         // Settings
         settingsTitle: '💰 Budget Tracker - Ustawienia',
         general: '⚙️ Ogólne',
@@ -300,6 +394,8 @@ export const translations: Record<Locale, Translations> = {
 
         // Confirmation
         confirmTitle: '⚠️ Potwierdź',
+        confirmDeleteTransaction: 'Czy na pewno chcesz usunąć tę transakcję?',
+        deleteTransaction: 'Usuń transakcję',
 
         // Notices
         noticeTransactionAdded: '✅ Dodano',

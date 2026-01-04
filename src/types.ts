@@ -1,18 +1,30 @@
-import { App } from 'obsidian';
-import { Locale, t } from './i18n';
+import type { Locale } from './i18n';
+import { t } from './i18n';
+
+export interface TransactionFilter {
+    dateFrom?: string;
+    dateTo?: string;
+    category?: string;
+    type?: 'income' | 'expense' | 'all';
+    search?: string;
+}
 
 export interface IDataService {
     getCurrentMonthSummary(): MonthlySummary;
     getCategoryBreakdown(year: number, month: number): Array<{ category: string; name: string; amount: number; color: string; icon: string }>;
     getMonthlyTrends(months: number): Array<{ year: number; month: number; income: number; expense: number; balance: number }>;
     getRecentTransactions(limit: number): Transaction[];
+    getFilteredTransactions(filter: TransactionFilter): Transaction[];
     addTransaction(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction>;
+    updateTransaction(id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>): Promise<Transaction | null>;
+    deleteTransaction(id: string): Promise<boolean>;
 }
 
 export interface IBudgetPlugin {
     settings: BudgetPluginSettings;
     dataService: IDataService;
     openTransactionModal(defaultType?: 'income' | 'expense'): void;
+    openEditTransactionModal(transaction: Transaction): void;
     saveSettings(): Promise<void>;
     updateStatusBar(): void;
 }
@@ -37,6 +49,7 @@ export interface Category {
     icon: string;
     type: 'income' | 'expense' | 'both';
     color: string;
+    budgetLimit?: number; // Optional monthly budget limit
 }
 
 // Monthly summary data
@@ -50,6 +63,18 @@ export interface MonthlySummary {
     transactionCount: number;
 }
 
+// Recurring transaction configuration
+export interface RecurringTransaction {
+    id: string;
+    name: string;
+    amount: number;
+    type: 'income' | 'expense';
+    category: string;
+    dayOfMonth: number; // 1-28 (to avoid issues with short months)
+    isActive: boolean;
+    lastProcessed?: string; // ISO date of last auto-add
+}
+
 // Plugin settings stored in data.json
 export interface BudgetPluginSettings {
     categories: Category[];
@@ -59,6 +84,7 @@ export interface BudgetPluginSettings {
     dateFormat: string;
     showBalanceInStatusBar: boolean;
     locale: Locale;
+    recurringTransactions: RecurringTransaction[];
 }
 
 // Get default expense categories based on locale
@@ -103,5 +129,6 @@ export function getDefaultSettings(locale: Locale): BudgetPluginSettings {
         dateFormat: 'YYYY-MM-DD',
         showBalanceInStatusBar: true,
         locale: locale,
+        recurringTransactions: [],
     };
 }
