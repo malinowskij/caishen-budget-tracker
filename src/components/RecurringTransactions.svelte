@@ -61,11 +61,6 @@
                 </div>
             </div>
         {/each}
-    {:else}
-        <p class="empty-state">
-            {trans.noRecurringTransactions ??
-                "No recurring transactions. Add one below."}
-        </p>
     {/if}
 
     <button class="add-recurring" on:click={onAdd}>

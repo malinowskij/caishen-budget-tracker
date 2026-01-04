@@ -145,8 +145,6 @@
             </div>
         {/if}
     </div>
-{:else}
-    <p class="empty-state">{trans.noExpensesThisMonth}</p>
 {/if}
 
 <style>

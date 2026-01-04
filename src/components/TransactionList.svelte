@@ -60,8 +60,6 @@
             </div>
         {/each}
     </div>
-{:else}
-    <p class="empty-state">{trans.noTransactionsYet}</p>
 {/if}
 
 <style>
@@ -124,12 +122,5 @@
 
     .amount-expense {
         color: #e74c3c;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 24px;
-        color: var(--text-muted);
-        font-style: italic;
     }
 </style>

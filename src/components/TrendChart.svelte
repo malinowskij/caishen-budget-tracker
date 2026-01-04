@@ -10,15 +10,18 @@
     }>;
     export let trans: Translations;
 
-    $: maxValue = Math.max(...trends.flatMap((t) => [t.income, t.expense]), 1);
+    $: hasData = trends.some((t) => t.income > 0 || t.expense > 0);
+    $: maxValue = hasData
+        ? Math.max(...trends.flatMap((t) => [t.income, t.expense]))
+        : 1;
 
     function getHeight(value: number): number {
         return maxValue > 0 ? (value / maxValue) * 100 : 0;
     }
 </script>
 
-<div class="trend-chart">
-    {#if maxValue > 0}
+<div class="trend-chart" class:has-data={hasData}>
+    {#if hasData}
         {#each trends as trend}
             <div class="trend-month">
                 <div class="trend-bars">
@@ -38,12 +41,10 @@
                 </div>
             </div>
         {/each}
-    {:else}
-        <p class="empty-state">{trans.noDataToDisplay}</p>
     {/if}
 </div>
 
-{#if maxValue > 0}
+{#if hasData}
     <div class="trend-legend">
         <span class="legend-income">💚 {trans.income}</span>
         <span class="legend-expense">🔴 {trans.expense}</span>
@@ -53,13 +54,19 @@
 <style>
     .trend-chart {
         display: flex;
-        justify-content: space-around;
-        align-items: flex-end;
-        height: 150px;
+        justify-content: center;
+        align-items: center;
         gap: 12px;
         padding: 16px;
         background: var(--background-secondary);
         border-radius: 12px;
+        min-height: 60px;
+    }
+
+    .trend-chart.has-data {
+        justify-content: space-around;
+        align-items: flex-end;
+        height: 150px;
     }
 
     .trend-month {
@@ -107,10 +114,5 @@
     .legend-income,
     .legend-expense {
         font-size: 12px;
-    }
-
-    .empty-state {
-        text-align: center;
-        color: var(--text-muted);
     }
 </style>

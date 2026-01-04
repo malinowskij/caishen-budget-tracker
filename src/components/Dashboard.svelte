@@ -123,8 +123,6 @@
                     />
                 {/each}
             </div>
-        {:else}
-            <p class="empty-state">{trans.noExpensesThisMonth}</p>
         {/if}
     </div>
 

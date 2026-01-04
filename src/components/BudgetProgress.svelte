@@ -81,11 +81,6 @@
             </div>
         {/each}
     </div>
-{:else}
-    <p class="empty-state">
-        {trans.noBudgetsSet ??
-            "No budget limits set. Configure them in settings."}
-    </p>
 {/if}
 
 <style>
