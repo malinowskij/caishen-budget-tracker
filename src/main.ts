@@ -22,6 +22,19 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         const savedData = await this.loadData();
         await this._dataService.loadTransactions(savedData);
 
+        // Sync from markdown files after vault is ready
+        this.app.workspace.onLayoutReady(async () => {
+            const importedCount = await this._dataService.syncFromMarkdownFiles();
+            if (importedCount > 0) {
+                await this.saveTransactionData();
+                new Notice(`📥 Imported ${importedCount} transactions from markdown files`);
+                // Refresh status bar
+                this.updateStatusBar();
+                // Refresh dashboard view if open
+                this.refreshDashboard();
+            }
+        });
+
         // Register dashboard view
         this.registerView(
             DASHBOARD_VIEW_TYPE,

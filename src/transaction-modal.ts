@@ -1,4 +1,5 @@
-import { App, Modal } from 'obsidian';
+import { Modal } from 'obsidian';
+import type { App } from 'obsidian';
 import type { BudgetPluginSettings, Transaction } from './types';
 import TransactionForm from './components/TransactionForm.svelte';
 

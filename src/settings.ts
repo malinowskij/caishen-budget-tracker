@@ -1,4 +1,5 @@
-import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
+import { PluginSettingTab, Setting, Notice } from 'obsidian';
+import type { App } from 'obsidian';
 import type BudgetTrackerPlugin from './main';
 import type { Category, RecurringTransaction } from './types';
 import { getDefaultCategories } from './types';

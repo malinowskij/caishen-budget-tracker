@@ -1,10 +1,8 @@
 <script lang="ts">
     import type { Transaction, Category } from "../types";
-    import type { Translations } from "../i18n";
 
     export let transactions: Transaction[];
     export let categories: Category[];
-    export let trans: Translations;
     export let onEdit: ((transaction: Transaction) => void) | undefined =
         undefined;
 

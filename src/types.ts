@@ -18,6 +18,7 @@ export interface IDataService {
     addTransaction(transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): Promise<Transaction>;
     updateTransaction(id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>): Promise<Transaction | null>;
     deleteTransaction(id: string): Promise<boolean>;
+    syncFromMarkdownFiles(): Promise<number>;
 }
 
 export interface IBudgetPlugin {

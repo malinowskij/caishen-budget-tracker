@@ -1,4 +1,5 @@
-import { App, TFile } from 'obsidian';
+import { TFile } from 'obsidian';
+import type { App } from 'obsidian';
 import type { Transaction, MonthlySummary, BudgetPluginSettings, TransactionFilter } from './types';
 import { t } from './i18n';
 
@@ -315,5 +316,153 @@ export class DataService {
         }
 
         return result;
+    }
+
+    // Parse transactions from markdown content
+    parseTransactionsFromMarkdown(content: string): Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>[] {
+        const transactions: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>[] = [];
+
+        // Find the transactions table - look for table rows after header
+        const lines = content.split('\n');
+        let inTable = false;
+        let headerPassed = false;
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+
+            // Detect table start (header row with Date, Type, etc.)
+            if (trimmed.startsWith('|') && (trimmed.includes('Date') || trimmed.includes('Data'))) {
+                inTable = true;
+                continue;
+            }
+
+            // Skip separator row
+            if (inTable && trimmed.startsWith('|') && trimmed.includes('---')) {
+                headerPassed = true;
+                continue;
+            }
+
+            // End of table
+            if (inTable && headerPassed && !trimmed.startsWith('|')) {
+                break;
+            }
+
+            // Parse data row
+            if (inTable && headerPassed && trimmed.startsWith('|')) {
+                const cells = trimmed.split('|').map(c => c.trim()).filter(c => c.length > 0);
+
+                if (cells.length >= 5) {
+                    const [dateCell, typeCell, categoryCell, descCell, amountCell] = cells;
+
+                    // Parse type from emoji
+                    const type: 'income' | 'expense' = typeCell?.includes('💚') ? 'income' : 'expense';
+
+                    // Parse amount - remove sign, currency, and parse number
+                    const amountMatch = amountCell?.match(/[+-]?([\d,]+\.?\d*)/);
+                    const amount = amountMatch ? parseFloat(amountMatch[1]?.replace(/,/g, '') || '0') : 0;
+
+                    // Extract currency from amount cell
+                    const currencyMatch = amountCell?.match(/[A-Z]{3}/);
+                    const currency = currencyMatch ? currencyMatch[0] : this.settings.defaultCurrency;
+
+                    // Find category by icon or name
+                    const categoryId = this.findCategoryIdFromDisplay(categoryCell || '');
+
+                    // Parse date
+                    const date = dateCell || '';
+
+                    // Parse description
+                    const description = descCell === '-' ? '' : (descCell || '');
+
+                    if (date && amount > 0) {
+                        transactions.push({
+                            date,
+                            amount,
+                            type,
+                            category: categoryId,
+                            description,
+                            currency,
+                        });
+                    }
+                }
+            }
+        }
+
+        return transactions;
+    }
+
+    // Find category ID from display string (icon + name)
+    private findCategoryIdFromDisplay(display: string): string {
+        for (const cat of this.settings.categories) {
+            if (display.includes(cat.icon) || display.includes(cat.name)) {
+                return cat.id;
+            }
+        }
+        // Return as-is if no match (might be legacy category)
+        return display.replace(/[^\w-]/g, '').toLowerCase() || 'other-expense';
+    }
+
+    // Check if transaction already exists (duplicate detection)
+    private transactionExists(txn: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>): boolean {
+        return this.transactions.some(existing =>
+            existing.date === txn.date &&
+            Math.abs(existing.amount - txn.amount) < 0.01 &&
+            existing.type === txn.type &&
+            existing.category === txn.category
+        );
+    }
+
+    // Sync transactions from markdown files in Budget folder
+    async syncFromMarkdownFiles(): Promise<number> {
+        const budgetFolder = this.settings.budgetFolder;
+        let importedCount = 0;
+
+        console.log(`[Budget] Starting sync from markdown files in folder: ${budgetFolder}`);
+
+        try {
+            // Get all files in budget folder recursively
+            const allFiles = this.app.vault.getFiles();
+            console.log(`[Budget] Total files in vault: ${allFiles.length}`);
+
+            const files = allFiles.filter(f =>
+                f.path.startsWith(budgetFolder) && f.extension === 'md'
+            );
+            console.log(`[Budget] Found ${files.length} markdown files in budget folder`);
+
+            for (const file of files) {
+                try {
+                    const content = await this.app.vault.read(file);
+                    const parsedTransactions = this.parseTransactionsFromMarkdown(content);
+                    console.log(`[Budget] File ${file.path}: parsed ${parsedTransactions.length} transactions`);
+
+                    for (const txn of parsedTransactions) {
+                        if (!this.transactionExists(txn)) {
+                            // Add without regenerating markdown (we're importing FROM markdown)
+                            const now = new Date().toISOString();
+                            this.transactions.push({
+                                ...txn,
+                                id: this.generateId(),
+                                createdAt: now,
+                                updatedAt: now,
+                            });
+                            importedCount++;
+                            console.log(`[Budget] Imported: ${txn.date} ${txn.type} ${txn.amount}`);
+                        } else {
+                            console.log(`[Budget] Skipped duplicate: ${txn.date} ${txn.type} ${txn.amount}`);
+                        }
+                    }
+                } catch (err) {
+                    console.warn(`[Budget] Failed to parse ${file.path}:`, err);
+                }
+            }
+
+            if (importedCount > 0) {
+                console.log(`[Budget] Imported ${importedCount} transactions from markdown files`);
+            }
+        } catch (err) {
+            console.error('[Budget] Error syncing from markdown files:', err);
+        }
+
+        return importedCount;
     }
 }

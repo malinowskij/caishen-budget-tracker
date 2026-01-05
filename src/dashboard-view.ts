@@ -1,4 +1,5 @@
-import { ItemView, WorkspaceLeaf } from 'obsidian';
+import { ItemView } from 'obsidian';
+import type { WorkspaceLeaf } from 'obsidian';
 import type { IBudgetPlugin } from './types';
 import Dashboard from './components/Dashboard.svelte';
 

@@ -154,7 +154,6 @@
         <TransactionList
             transactions={filteredTransactions}
             categories={plugin.settings.categories}
-            {trans}
             onEdit={(txn) => plugin.openEditTransactionModal(txn)}
         />
 

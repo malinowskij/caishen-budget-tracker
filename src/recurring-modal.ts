@@ -1,4 +1,5 @@
-import { App, Modal } from 'obsidian';
+import { Modal } from 'obsidian';
+import type { App } from 'obsidian';
 import type { BudgetPluginSettings, RecurringTransaction } from './types';
 import { t } from './i18n';
 import RecurringForm from './components/RecurringForm.svelte';
