@@ -21,5 +21,8 @@ Always keep the code up to date.
 
 Always keep the documentation up to date. [README.md](README.md)
 
+Roadmap is in [ROADMAP.md](docs/ROADMAP.md)
+Always update ROADMAP.md when adding new features or removing old features. Update when planning to implement new features.
+
 
 

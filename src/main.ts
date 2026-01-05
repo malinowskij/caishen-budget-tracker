@@ -2,6 +2,7 @@ import { Plugin, Notice } from 'obsidian';
 import type { BudgetPluginSettings, Transaction, IBudgetPlugin, IDataService } from './types';
 import { getDefaultSettings } from './types';
 import { DataService } from './data-service';
+import { ConfigService } from './config-service';
 import { TransactionModal } from './transaction-modal';
 import { BudgetSettingsTab } from './settings';
 import { BudgetDashboardView, DASHBOARD_VIEW_TYPE } from './dashboard-view';
@@ -11,6 +12,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
     settings!: BudgetPluginSettings;
     dataService!: IDataService;
     private _dataService!: DataService;
+    private _configService!: ConfigService;
     private statusBarItem: HTMLElement | null = null;
 
     async onload() {
@@ -165,15 +167,71 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
     }
 
     async loadSettings() {
-        const savedData = await this.loadData();
         const detectedLocale = detectLocale();
         const defaultSettings = getDefaultSettings(detectedLocale);
+
+        // First, load from data.json (for backward compatibility and transactions)
+        const savedData = await this.loadData();
         this.settings = Object.assign({}, defaultSettings, savedData);
+
+        // Initialize config service with budget folder
+        this._configService = new ConfigService(this.app, this.settings.budgetFolder);
+
+        // Try to load settings from markdown config file
+        // This will be done after layout is ready (vault needs to be loaded)
+        this.app.workspace.onLayoutReady(async () => {
+            await this.tryLoadConfigFromMarkdown();
+        });
+    }
+
+    private async tryLoadConfigFromMarkdown(): Promise<void> {
+        try {
+            const configFromMd = await this._configService.loadConfigFromMarkdown();
+
+            if (configFromMd) {
+                // Merge config from markdown (it takes priority)
+                this.settings = Object.assign({}, this.settings, configFromMd);
+                this._dataService.updateSettings(this.settings);
+                this._configService.updateBudgetFolder(this.settings.budgetFolder);
+                console.log('[Budget] Settings loaded from markdown config file');
+            } else if (await this.shouldMigrateConfig()) {
+                // Config file doesn't exist but we have settings - migrate
+                await this.migrateConfigToMarkdown();
+            }
+        } catch (err) {
+            console.error('[Budget] Error loading config from markdown:', err);
+        }
+    }
+
+    private async shouldMigrateConfig(): Promise<boolean> {
+        // Migrate if we have categories (not default) but no config file
+        return this.settings.categories.length > 0;
+    }
+
+    private async migrateConfigToMarkdown(): Promise<void> {
+        try {
+            await this._configService.saveConfigToMarkdown(this.settings);
+            new Notice('💾 Settings migrated to Budget/_config.md for sync');
+            console.log('[Budget] Settings migrated to markdown config file');
+        } catch (err) {
+            console.error('[Budget] Failed to migrate config:', err);
+        }
     }
 
     async saveSettings(): Promise<void> {
+        // Save to markdown config file (for sync)
+        try {
+            if (this._configService) {
+                await this._configService.saveConfigToMarkdown(this.settings);
+            }
+        } catch (err) {
+            console.error('[Budget] Failed to save config to markdown:', err);
+        }
+
+        // Also save to data.json (keeps transactions there)
         await this.saveAllData();
         this._dataService.updateSettings(this.settings);
+        this._configService?.updateBudgetFolder(this.settings.budgetFolder);
     }
 
     async saveTransactionData(): Promise<void> {
