@@ -78,21 +78,50 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
     async processRecurringTransactions() {
         const now = new Date();
         const currentDay = now.getDate();
-        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
         const recurring = this.settings.recurringTransactions || [];
         let hasChanges = false;
 
         for (const item of recurring) {
             if (!item.isActive) continue;
 
-            // Check if already processed this month
-            if (item.lastProcessed?.startsWith(currentMonth)) continue;
+            // Determine start date for backfilling
+            // Use lastProcessed if available, otherwise use createdAt, otherwise skip
+            let startDate: Date;
+            if (item.lastProcessed) {
+                startDate = new Date(item.lastProcessed);
+            } else if (item.createdAt) {
+                // For new items, start from the month they were created
+                startDate = new Date(item.createdAt);
+                // Set to the previous month so we start processing from createdAt month
+                startDate.setMonth(startDate.getMonth() - 1);
+            } else {
+                // No createdAt means this is a legacy item, set it and skip this run
+                item.createdAt = now.toISOString().split('T')[0];
+                hasChanges = true;
+                continue;
+            }
 
-            // Check if today is the day or past the day this month
-            if (currentDay >= item.dayOfMonth) {
-                // Add transaction
-                const transactionDate = `${currentMonth}-${String(item.dayOfMonth).padStart(2, '0')}`;
+            // Start from the month after lastProcessed
+            let processDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 1);
+
+            // Process all months up to current month
+            while (
+                processDate.getFullYear() < now.getFullYear() ||
+                (processDate.getFullYear() === now.getFullYear() && processDate.getMonth() <= now.getMonth())
+            ) {
+                const year = processDate.getFullYear();
+                const month = processDate.getMonth() + 1;
+                const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+
+                // For current month, only process if we've passed the day
+                if (processDate.getFullYear() === now.getFullYear() && processDate.getMonth() === now.getMonth()) {
+                    if (currentDay < item.dayOfMonth) {
+                        break; // Not yet time for this month
+                    }
+                }
+
+                // Add transaction for this month
+                const transactionDate = `${monthKey}-${String(item.dayOfMonth).padStart(2, '0')}`;
 
                 await this._dataService.addTransaction({
                     date: transactionDate,
@@ -103,11 +132,12 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
                     currency: this.settings.defaultCurrency,
                 });
 
-                // Mark as processed
-                item.lastProcessed = now.toISOString().split('T')[0];
+                item.lastProcessed = transactionDate;
                 hasChanges = true;
+                console.log(`Auto-added recurring: ${item.name} for ${monthKey}`);
 
-                console.log(`Auto-added recurring: ${item.name}`);
+                // Move to next month
+                processDate.setMonth(processDate.getMonth() + 1);
             }
         }
 

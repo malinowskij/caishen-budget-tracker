@@ -51,6 +51,8 @@
             category,
             dayOfMonth,
             isActive,
+            createdAt:
+                editItem?.createdAt ?? new Date().toISOString().split("T")[0],
         });
     }
 </script>

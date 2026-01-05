@@ -72,6 +72,7 @@ export interface RecurringTransaction {
     category: string;
     dayOfMonth: number; // 1-28 (to avoid issues with short months)
     isActive: boolean;
+    createdAt: string; // ISO date when recurring was created (used for backfilling)
     lastProcessed?: string; // ISO date of last auto-add
 }
 
