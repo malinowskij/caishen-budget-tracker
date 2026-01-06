@@ -180,6 +180,17 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         const savedData = await this.loadData();
         this.settings = Object.assign({}, defaultSettings, savedData);
 
+        // Ensure savingsGoals exists (migration for old settings)
+        if (!this.settings.savingsGoals) {
+            this.settings.savingsGoals = [];
+        }
+        if (this.settings.notifyBeforeRecurring === undefined) {
+            this.settings.notifyBeforeRecurring = true;
+        }
+        if (this.settings.notifyDaysBefore === undefined) {
+            this.settings.notifyDaysBefore = 1;
+        }
+
         // Initialize config service with budget folder
         this._configService = new ConfigService(this.app, this.settings.budgetFolder);
 

@@ -245,10 +245,12 @@ export class ConfigService {
 
         // Savings Goals
         yaml += 'savingsGoals:\n';
-        if (settings.savingsGoals.length === 0) {
+        const savingsGoals = settings.savingsGoals || [];
+        console.log('[Budget] Saving savingsGoals to config:', savingsGoals.length, 'goals');
+        if (savingsGoals.length === 0) {
             yaml += '  # No savings goals configured\n';
         } else {
-            for (const goal of settings.savingsGoals) {
+            for (const goal of savingsGoals) {
                 yaml += `  - id: ${goal.id}\n`;
                 yaml += `    name: "${goal.name}"\n`;
                 yaml += `    targetAmount: ${goal.targetAmount}\n`;
