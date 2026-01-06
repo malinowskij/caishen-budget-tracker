@@ -17,6 +17,8 @@ Use svelte for building plugin https://docs.obsidian.md/Plugins/Getting+started/
 
 Always keep the code up to date. 
 
+Always update translations when adding new strings.
+
 ## Documentation
 
 Always keep the documentation up to date. [README.md](README.md)

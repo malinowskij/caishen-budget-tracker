@@ -142,6 +142,19 @@ export interface Translations {
         newExpense: string;
         newIncome: string;
     };
+
+    // Analytics
+    analytics: string;
+    yearlyOverview: string;
+    savingsRate: string;
+    spendingAverages: string;
+    dailyAverage: string;
+    weeklyAverage: string;
+    monthlyAverage: string;
+    topSpendingCategories: string;
+    categoryTrends: string;
+    noExpenseData: string;
+    perMonth: string;
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -286,6 +299,19 @@ export const translations: Record<Locale, Translations> = {
             newExpense: 'New expense',
             newIncome: 'New income',
         },
+
+        // Analytics
+        analytics: '📈 Analytics',
+        yearlyOverview: '📅 Yearly Overview',
+        savingsRate: '💰 Savings Rate',
+        spendingAverages: '📊 Spending Averages',
+        dailyAverage: 'Daily Average',
+        weeklyAverage: 'Weekly Average',
+        monthlyAverage: 'Monthly Average',
+        topSpendingCategories: '🏆 Top Spending Categories',
+        categoryTrends: '📂 Category Trends',
+        noExpenseData: 'No expense data to display',
+        perMonth: '/mo',
     },
 
     pl: {
@@ -429,6 +455,19 @@ export const translations: Record<Locale, Translations> = {
             newExpense: 'Nowy wydatek',
             newIncome: 'Nowy przychód',
         },
+
+        // Analytics
+        analytics: '📈 Analityka',
+        yearlyOverview: '📅 Widok roczny',
+        savingsRate: '💰 Stopa oszczędności',
+        spendingAverages: '📊 Średnie wydatki',
+        dailyAverage: 'Średnia dzienna',
+        weeklyAverage: 'Średnia tygodniowa',
+        monthlyAverage: 'Średnia miesięczna',
+        topSpendingCategories: '🏆 Top kategorii wydatków',
+        categoryTrends: '📂 Trendy kategorii',
+        noExpenseData: 'Brak danych o wydatkach.',
+        perMonth: '/mies.',
     },
 };
 

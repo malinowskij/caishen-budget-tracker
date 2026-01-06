@@ -318,6 +318,161 @@ export class DataService {
         return result;
     }
 
+    // Get yearly summary for a given year
+    getYearlySummary(year: number): {
+        year: number;
+        months: { month: number; income: number; expense: number; balance: number }[];
+        totalIncome: number;
+        totalExpense: number;
+        balance: number;
+        savingsRate: number;
+    } {
+        const months: { month: number; income: number; expense: number; balance: number }[] = [];
+        let totalIncome = 0;
+        let totalExpense = 0;
+
+        for (let month = 1; month <= 12; month++) {
+            const summary = this.getMonthlySummary(year, month);
+            months.push({
+                month,
+                income: summary.totalIncome,
+                expense: summary.totalExpense,
+                balance: summary.balance,
+            });
+            totalIncome += summary.totalIncome;
+            totalExpense += summary.totalExpense;
+        }
+
+        const balance = totalIncome - totalExpense;
+        const savingsRate = totalIncome > 0 ? (balance / totalIncome) * 100 : 0;
+
+        return {
+            year,
+            months,
+            totalIncome,
+            totalExpense,
+            balance,
+            savingsRate,
+        };
+    }
+
+    // Get average spending statistics
+    getAverageSpending(): {
+        daily: number;
+        weekly: number;
+        monthly: number;
+        topCategories: { category: string; name: string; icon: string; average: number }[];
+    } {
+        const now = new Date();
+        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+
+        // Get expenses from last 3 months
+        const recentExpenses = this.transactions.filter(t =>
+            t.type === 'expense' &&
+            new Date(t.date) >= threeMonthsAgo
+        );
+
+        const totalExpense = recentExpenses.reduce((sum, t) => sum + t.amount, 0);
+        const daysDiff = Math.max(1, Math.ceil((now.getTime() - threeMonthsAgo.getTime()) / (1000 * 60 * 60 * 24)));
+
+        const daily = totalExpense / daysDiff;
+        const weekly = daily * 7;
+        const monthly = totalExpense / 3;
+
+        // Calculate category averages
+        const categoryTotals: Record<string, number> = {};
+        for (const t of recentExpenses) {
+            categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+        }
+
+        const topCategories = Object.entries(categoryTotals)
+            .map(([categoryId, total]) => {
+                const cat = this.settings.categories.find(c => c.id === categoryId);
+                return {
+                    category: categoryId,
+                    name: cat?.name || categoryId,
+                    icon: cat?.icon || '📦',
+                    average: total / 3, // 3 months
+                };
+            })
+            .sort((a, b) => b.average - a.average)
+            .slice(0, 5);
+
+        return { daily, weekly, monthly, topCategories };
+    }
+
+    // Get category trends over time
+    getCategoryTrends(months: number = 6): Array<{
+        category: string;
+        name: string;
+        icon: string;
+        color: string;
+        data: { month: string; amount: number }[];
+    }> {
+        const now = new Date();
+        const result: Array<{
+            category: string;
+            name: string;
+            icon: string;
+            color: string;
+            data: { month: string; amount: number }[];
+        }> = [];
+
+        // Get expense categories only
+        const expenseCategories = this.settings.categories.filter(c => c.type === 'expense');
+
+        for (const cat of expenseCategories) {
+            const data: { month: string; amount: number }[] = [];
+            let hasData = false;
+
+            for (let i = months - 1; i >= 0; i--) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+
+                const monthTransactions = this.transactions.filter(t =>
+                    t.category === cat.id &&
+                    t.type === 'expense' &&
+                    t.date.startsWith(monthKey)
+                );
+
+                const amount = monthTransactions.reduce((sum, t) => sum + t.amount, 0);
+                if (amount > 0) hasData = true;
+
+                data.push({ month: monthKey, amount });
+            }
+
+            // Only include categories with data
+            if (hasData) {
+                result.push({
+                    category: cat.id,
+                    name: cat.name,
+                    icon: cat.icon,
+                    color: cat.color,
+                    data,
+                });
+            }
+        }
+
+        // Sort by total amount (highest spending first)
+        return result.sort((a, b) => {
+            const totalA = a.data.reduce((sum, d) => sum + d.amount, 0);
+            const totalB = b.data.reduce((sum, d) => sum + d.amount, 0);
+            return totalB - totalA;
+        });
+    }
+
+    // Get available years with transactions
+    getAvailableYears(): number[] {
+        const years = new Set<number>();
+        for (const t of this.transactions) {
+            const year = new Date(t.date).getFullYear();
+            years.add(year);
+        }
+        return Array.from(years).sort((a, b) => b - a);
+    }
+
     // Parse transactions from markdown content
     parseTransactionsFromMarkdown(content: string): Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>[] {
         const transactions: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>[] = [];

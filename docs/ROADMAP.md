@@ -20,6 +20,10 @@
 - [x] Config sync via markdown file (WebDAV/Syncthing compatible)
 - [x] Keyboard shortcuts (Ctrl+Shift+E/I/B)
 - [x] Transaction inline editing
+- [x] Yearly overview view
+- [x] Average spending statistics
+- [x] Category comparison charts
+- [x] Spending trends analysis
 
 ---
 
@@ -34,7 +38,6 @@ _Nothing currently in progress_
 ### v1.1 - UX Improvements
 - [ ] Remove debug logging from sync
 - [ ] Mobile optimization testing
-- [ ] Transaction inline editing
 
 ### v1.2 - Analytics
 - [ ] Yearly overview view

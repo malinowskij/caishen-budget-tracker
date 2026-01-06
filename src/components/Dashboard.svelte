@@ -8,6 +8,9 @@
     import ExportButtons from "./ExportButtons.svelte";
     import BudgetProgress from "./BudgetProgress.svelte";
     import PieChart from "./PieChart.svelte";
+    import YearlyOverview from "./YearlyOverview.svelte";
+    import SpendingStats from "./SpendingStats.svelte";
+    import CategoryComparison from "./CategoryComparison.svelte";
 
     export let plugin: IBudgetPlugin;
 
@@ -153,6 +156,28 @@
     <div class="budget-section">
         <h2>{trans.trendLastMonths}</h2>
         <TrendChart {trends} {trans} />
+    </div>
+
+    <!-- Analytics Section -->
+    <div class="budget-section">
+        <h2>{trans.analytics}</h2>
+        <div class="analytics-grid">
+            <YearlyOverview
+                dataService={plugin.dataService}
+                {trans}
+                currency={plugin.settings.defaultCurrency}
+            />
+            <SpendingStats
+                dataService={plugin.dataService}
+                {trans}
+                currency={plugin.settings.defaultCurrency}
+            />
+            <CategoryComparison
+                dataService={plugin.dataService}
+                {trans}
+                currency={plugin.settings.defaultCurrency}
+            />
+        </div>
     </div>
 
     <div class="budget-section">
@@ -323,6 +348,13 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
+    }
+
+    /* Analytics */
+    .analytics-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
     }
 
     /* Responsive */

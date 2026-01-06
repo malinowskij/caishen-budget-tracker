@@ -19,6 +19,11 @@ export interface IDataService {
     updateTransaction(id: string, updates: Partial<Omit<Transaction, 'id' | 'createdAt'>>): Promise<Transaction | null>;
     deleteTransaction(id: string): Promise<boolean>;
     syncFromMarkdownFiles(): Promise<number>;
+    // Analytics
+    getYearlySummary(year: number): { year: number; months: { month: number; income: number; expense: number; balance: number }[]; totalIncome: number; totalExpense: number; balance: number; savingsRate: number };
+    getAverageSpending(): { daily: number; weekly: number; monthly: number; topCategories: { category: string; name: string; icon: string; average: number }[] };
+    getCategoryTrends(months: number): Array<{ category: string; name: string; icon: string; color: string; data: { month: string; amount: number }[] }>;
+    getAvailableYears(): number[];
 }
 
 export interface IBudgetPlugin {
