@@ -155,6 +155,43 @@ export interface Translations {
     categoryTrends: string;
     noExpenseData: string;
     perMonth: string;
+
+    // Savings Goals
+    savingsGoals: string;
+    addSavingsGoal: string;
+    editSavingsGoal: string;
+    goalName: string;
+    targetAmount: string;
+    currentAmount: string;
+    deadline: string;
+    addToGoal: string;
+    goalProgress: string;
+    noGoalsYet: string;
+
+    // Tags
+    tags: string;
+    tagsPlaceholder: string;
+    filterByTag: string;
+
+    // Subcategories
+    parentCategory: string;
+    subcategory: string;
+    noParent: string;
+
+    // Notifications
+    notifications: string;
+    notifyBeforeRecurring: string;
+    notifyBeforeRecurringDesc: string;
+    notifyDaysBefore: string;
+    notifyDaysBeforeDesc: string;
+    upcomingRecurring: string;
+
+    // Tabs
+    tabOverview: string;
+    tabCategories: string;
+    tabGoals: string;
+    tabAnalytics: string;
+    tabTransactions: string;
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -312,6 +349,43 @@ export const translations: Record<Locale, Translations> = {
         categoryTrends: '📂 Category Trends',
         noExpenseData: 'No expense data to display',
         perMonth: '/mo',
+
+        // Savings Goals
+        savingsGoals: '🎯 Savings Goals',
+        addSavingsGoal: 'Add Savings Goal',
+        editSavingsGoal: 'Edit Goal',
+        goalName: 'Goal Name',
+        targetAmount: 'Target Amount',
+        currentAmount: 'Current Amount',
+        deadline: 'Deadline',
+        addToGoal: 'Add to Goal',
+        goalProgress: 'Progress',
+        noGoalsYet: 'No savings goals yet. Add one to start tracking!',
+
+        // Tags
+        tags: 'Tags',
+        tagsPlaceholder: 'Enter tags separated by commas',
+        filterByTag: 'Filter by tag',
+
+        // Subcategories
+        parentCategory: 'Parent Category',
+        subcategory: 'Subcategory',
+        noParent: '(No parent)',
+
+        // Notifications
+        notifications: 'Notifications',
+        notifyBeforeRecurring: 'Notify before recurring',
+        notifyBeforeRecurringDesc: 'Get notified before recurring transactions are due',
+        notifyDaysBefore: 'Days before',
+        notifyDaysBeforeDesc: 'How many days before to notify',
+        upcomingRecurring: 'Upcoming recurring transactions',
+
+        // Tabs
+        tabOverview: 'Overview',
+        tabCategories: 'Categories',
+        tabGoals: 'Goals',
+        tabAnalytics: 'Analytics',
+        tabTransactions: 'Transactions',
     },
 
     pl: {
@@ -468,6 +542,43 @@ export const translations: Record<Locale, Translations> = {
         categoryTrends: '📂 Trendy kategorii',
         noExpenseData: 'Brak danych o wydatkach.',
         perMonth: '/mies.',
+
+        // Savings Goals
+        savingsGoals: '🎯 Cele oszczędności',
+        addSavingsGoal: 'Dodaj cel oszczędności',
+        editSavingsGoal: 'Edytuj cel',
+        goalName: 'Nazwa celu',
+        targetAmount: 'Kwota docelowa',
+        currentAmount: 'Aktualna kwota',
+        deadline: 'Termin',
+        addToGoal: 'Dodaj do celu',
+        goalProgress: 'Postęp',
+        noGoalsYet: 'Brak celów oszczędności. Dodaj pierwszy!',
+
+        // Tags
+        tags: 'Tagi',
+        tagsPlaceholder: 'Wprowadź tagi oddzielone przecinkami',
+        filterByTag: 'Filtruj po tagu',
+
+        // Subcategories
+        parentCategory: 'Kategoria nadrzędna',
+        subcategory: 'Podkategoria',
+        noParent: '(Brak nadrzędnej)',
+
+        // Notifications
+        notifications: 'Powiadomienia',
+        notifyBeforeRecurring: 'Powiadom przed cyklicznymi',
+        notifyBeforeRecurringDesc: 'Otrzymuj powiadomienia przed terminami transakcji cyklicznych',
+        notifyDaysBefore: 'Dni przed',
+        notifyDaysBeforeDesc: 'Ile dni przed terminem powiadomić',
+        upcomingRecurring: 'Nadchodzące transakcje cykliczne',
+
+        // Tabs
+        tabOverview: 'Przegląd',
+        tabCategories: 'Kategorie',
+        tabGoals: 'Cele',
+        tabAnalytics: 'Analityka',
+        tabTransactions: 'Transakcje',
     },
 };
 

@@ -39,12 +39,6 @@ _Nothing currently in progress_
 - [ ] Remove debug logging from sync
 - [ ] Mobile optimization testing
 
-### v1.2 - Analytics
-- [ ] Yearly overview view
-- [ ] Average spending statistics (daily/weekly/monthly)
-- [ ] Category comparison charts
-- [ ] Spending trends analysis
-
 ### v1.3 - Advanced Features
 - [ ] Savings goals with progress tracking
 - [ ] Transaction tags (in addition to categories)

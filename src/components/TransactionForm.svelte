@@ -20,6 +20,7 @@
     let amount: number = editTransaction?.amount ?? 0;
     let category: string = editTransaction?.category ?? "";
     let description: string = editTransaction?.description ?? "";
+    let tagsInput: string = editTransaction?.tags?.join(", ") ?? "";
     let showDeleteConfirm = false;
 
     $: filteredCategories = settings.categories.filter(
@@ -37,6 +38,12 @@
     function handleSubmit() {
         if (amount <= 0 || !category || !date) return;
 
+        // Parse tags from comma-separated input
+        const tags = tagsInput
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t.length > 0);
+
         onSubmit({
             type,
             date,
@@ -44,6 +51,7 @@
             category,
             description,
             currency: settings.defaultCurrency,
+            tags: tags.length > 0 ? tags : undefined,
         });
     }
 
@@ -123,6 +131,21 @@
                 type="text"
                 placeholder={trans.descriptionPlaceholder}
                 bind:value={description}
+                style="width: 100%;"
+            />
+        </div>
+    </div>
+
+    <div class="setting-item">
+        <div class="setting-item-info">
+            <div class="setting-item-name">{trans.tags}</div>
+            <div class="setting-item-description">{trans.tagsPlaceholder}</div>
+        </div>
+        <div class="setting-item-control">
+            <input
+                type="text"
+                placeholder="work, groceries, urgent"
+                bind:value={tagsInput}
                 style="width: 100%;"
             />
         </div>

@@ -88,6 +88,13 @@
                             <div class="transaction-desc">
                                 {txn.description || txn.date}
                             </div>
+                            {#if txn.tags && txn.tags.length > 0}
+                                <div class="transaction-tags">
+                                    {#each txn.tags as tag}
+                                        <span class="tag-pill">🏷️ {tag}</span>
+                                    {/each}
+                                </div>
+                            {/if}
                         </div>
                     </div>
                     <div class="transaction-right">
@@ -168,5 +175,20 @@
 
     .amount-expense {
         color: #e74c3c;
+    }
+
+    .transaction-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 4px;
+    }
+
+    .tag-pill {
+        font-size: 10px;
+        padding: 2px 6px;
+        background: var(--background-secondary);
+        border-radius: 10px;
+        color: var(--text-muted);
     }
 </style>

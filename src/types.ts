@@ -34,6 +34,8 @@ export interface IBudgetPlugin {
     saveSettings(): Promise<void>;
     saveTransactionData(): Promise<void>;
     updateStatusBar(): void;
+    openSavingsGoalModal(existingGoal?: SavingsGoal): void;
+    addToSavingsGoal(goalId: string, amount: number): Promise<void>;
 }
 
 // Transaction represents a single income or expense entry
@@ -45,6 +47,7 @@ export interface Transaction {
     category: string;
     description: string;
     currency: string;
+    tags?: string[]; // Optional tags for additional categorization
     createdAt: string;
     updatedAt: string;
 }
@@ -57,6 +60,19 @@ export interface Category {
     type: 'income' | 'expense' | 'both';
     color: string;
     budgetLimit?: number; // Optional monthly budget limit
+    parentId?: string; // Optional parent category for subcategories
+}
+
+// Savings goal for tracking progress
+export interface SavingsGoal {
+    id: string;
+    name: string;
+    targetAmount: number;
+    currentAmount: number;
+    deadline?: string; // YYYY-MM-DD
+    icon: string;
+    color: string;
+    createdAt: string;
 }
 
 // Monthly summary data
@@ -93,6 +109,10 @@ export interface BudgetPluginSettings {
     showBalanceInStatusBar: boolean;
     locale: Locale;
     recurringTransactions: RecurringTransaction[];
+    savingsGoals: SavingsGoal[];
+    // Notification settings
+    notifyBeforeRecurring: boolean;
+    notifyDaysBefore: number;
 }
 
 // Get default expense categories based on locale
@@ -138,5 +158,8 @@ export function getDefaultSettings(locale: Locale): BudgetPluginSettings {
         showBalanceInStatusBar: true,
         locale: locale,
         recurringTransactions: [],
+        savingsGoals: [],
+        notifyBeforeRecurring: true,
+        notifyDaysBefore: 1,
     };
 }

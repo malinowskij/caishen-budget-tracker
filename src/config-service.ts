@@ -241,6 +241,31 @@ export class ConfigService {
                 }
             }
         }
+        yaml += '\n';
+
+        // Savings Goals
+        yaml += 'savingsGoals:\n';
+        if (settings.savingsGoals.length === 0) {
+            yaml += '  # No savings goals configured\n';
+        } else {
+            for (const goal of settings.savingsGoals) {
+                yaml += `  - id: ${goal.id}\n`;
+                yaml += `    name: "${goal.name}"\n`;
+                yaml += `    targetAmount: ${goal.targetAmount}\n`;
+                yaml += `    currentAmount: ${goal.currentAmount}\n`;
+                yaml += `    icon: "${goal.icon}"\n`;
+                yaml += `    color: "${goal.color}"\n`;
+                yaml += `    createdAt: "${goal.createdAt}"\n`;
+                if (goal.deadline) {
+                    yaml += `    deadline: "${goal.deadline}"\n`;
+                }
+            }
+        }
+        yaml += '\n';
+
+        // Notification settings
+        yaml += `notifyBeforeRecurring: ${settings.notifyBeforeRecurring}\n`;
+        yaml += `notifyDaysBefore: ${settings.notifyDaysBefore}\n`;
 
         yaml += '---\n\n';
         yaml += '# 💰 Budget Configuration\n\n';

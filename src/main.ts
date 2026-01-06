@@ -1,9 +1,10 @@
 import { Plugin, Notice } from 'obsidian';
-import type { BudgetPluginSettings, Transaction, IBudgetPlugin, IDataService } from './types';
+import type { BudgetPluginSettings, Transaction, IBudgetPlugin, IDataService, SavingsGoal } from './types';
 import { getDefaultSettings } from './types';
 import { DataService } from './data-service';
 import { ConfigService } from './config-service';
 import { TransactionModal } from './transaction-modal';
+import { SavingsGoalModal } from './savings-goal-modal';
 import { BudgetSettingsTab } from './settings';
 import { BudgetDashboardView, DASHBOARD_VIEW_TYPE } from './dashboard-view';
 import { detectLocale, t } from './i18n';
@@ -35,6 +36,8 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
                 // Refresh dashboard view if open
                 this.refreshDashboard();
             }
+            // Check for upcoming recurring transactions
+            this.checkUpcomingRecurring();
         });
 
         // Register dashboard view
@@ -339,6 +342,94 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
             const view = leaf.view;
             if (view instanceof BudgetDashboardView) {
                 view.refresh();
+            }
+        }
+    }
+
+    // Check for upcoming recurring transactions and notify
+    checkUpcomingRecurring() {
+        if (!this.settings.notifyBeforeRecurring) return;
+
+        const now = new Date();
+        const currentDay = now.getDate();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const trans = t(this.settings.locale);
+
+        const upcoming: string[] = [];
+
+        for (const rec of this.settings.recurringTransactions) {
+            if (!rec.isActive) continue;
+
+            let daysUntil = rec.dayOfMonth - currentDay;
+            // Handle month wrap
+            if (daysUntil < 0) {
+                daysUntil += daysInMonth;
+            }
+
+            if (daysUntil > 0 && daysUntil <= this.settings.notifyDaysBefore) {
+                const emoji = rec.type === 'expense' ? '🔴' : '💚';
+                upcoming.push(`${emoji} ${rec.name}: ${rec.amount} ${this.settings.defaultCurrency} (${daysUntil} days)`);
+            }
+        }
+
+        if (upcoming.length > 0) {
+            new Notice(`🔔 ${trans.upcomingRecurring}:\n${upcoming.join('\n')}`, 10000);
+        }
+    }
+
+    // Open savings goal modal
+    openSavingsGoalModal(existingGoal?: SavingsGoal) {
+        const trans = t(this.settings.locale);
+        new SavingsGoalModal(
+            this.app,
+            trans,
+            this.settings,
+            async (goalData) => {
+                if (existingGoal) {
+                    // Update existing goal
+                    const index = this.settings.savingsGoals.findIndex(g => g.id === existingGoal.id);
+                    if (index !== -1) {
+                        this.settings.savingsGoals[index] = {
+                            ...existingGoal,
+                            ...goalData,
+                        };
+                    }
+                } else {
+                    // Add new goal
+                    const newGoal: SavingsGoal = {
+                        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                        ...goalData,
+                        createdAt: new Date().toISOString(),
+                    };
+                    this.settings.savingsGoals.push(newGoal);
+                }
+                await this.saveSettings();
+                this.refreshDashboard();
+            },
+            existingGoal,
+            existingGoal ? async () => {
+                // Delete goal
+                const index = this.settings.savingsGoals.findIndex(g => g.id === existingGoal.id);
+                if (index !== -1) {
+                    this.settings.savingsGoals.splice(index, 1);
+                    await this.saveSettings();
+                    this.refreshDashboard();
+                    new Notice(`🗑️ Goal "${existingGoal.name}" deleted`);
+                }
+            } : undefined
+        ).open();
+    }
+
+    // Add funds to a savings goal
+    async addToSavingsGoal(goalId: string, amount: number) {
+        const goal = this.settings.savingsGoals.find(g => g.id === goalId);
+        if (goal) {
+            goal.currentAmount += amount;
+            await this.saveSettings();
+            this.refreshDashboard();
+
+            if (goal.currentAmount >= goal.targetAmount) {
+                new Notice(`🎉 ${goal.name} goal reached!`, 5000);
             }
         }
     }
