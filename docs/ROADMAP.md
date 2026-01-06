@@ -18,6 +18,8 @@
 - [x] Markdown import sync (restore from backup)
 - [x] Dashboard empty state fix
 - [x] Config sync via markdown file (WebDAV/Syncthing compatible)
+- [x] Keyboard shortcuts (Ctrl+Shift+E/I/B)
+- [x] Transaction inline editing
 
 ---
 
@@ -32,7 +34,6 @@ _Nothing currently in progress_
 ### v1.1 - UX Improvements
 - [ ] Remove debug logging from sync
 - [ ] Mobile optimization testing
-- [ ] Keyboard shortcuts for quick add
 - [ ] Transaction inline editing
 
 ### v1.2 - Analytics

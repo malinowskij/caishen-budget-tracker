@@ -66,18 +66,21 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         this.addCommand({
             id: 'add-expense',
             name: trans.addExpense,
+            hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'e' }],
             callback: () => this.openTransactionModal('expense'),
         });
 
         this.addCommand({
             id: 'add-income',
             name: trans.addIncome,
+            hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'i' }],
             callback: () => this.openTransactionModal('income'),
         });
 
         this.addCommand({
             id: 'open-dashboard',
             name: trans.budgetDashboard,
+            hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'b' }],
             callback: () => this.openDashboard(),
         });
 

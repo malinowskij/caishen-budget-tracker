@@ -52,6 +52,30 @@
                 ? plugin.dataService.getFilteredTransactions(filter)
                 : plugin.dataService.getRecentTransactions(10);
     }
+
+    async function handleInlineSave(
+        id: string,
+        updates: {
+            date: string;
+            amount: number;
+            type: "income" | "expense";
+            category: string;
+            description: string;
+            currency: string;
+        },
+    ) {
+        await plugin.dataService.updateTransaction(id, updates);
+        plugin.saveTransactionData();
+        plugin.updateStatusBar();
+        refresh();
+    }
+
+    async function handleDeleteTransaction(id: string) {
+        await plugin.dataService.deleteTransaction(id);
+        plugin.saveTransactionData();
+        plugin.updateStatusBar();
+        refresh();
+    }
 </script>
 
 <div class="budget-dashboard">
@@ -154,7 +178,9 @@
         <TransactionList
             transactions={filteredTransactions}
             categories={plugin.settings.categories}
-            onEdit={(txn) => plugin.openEditTransactionModal(txn)}
+            currency={plugin.settings.defaultCurrency}
+            onSave={(id, updates) => handleInlineSave(id, updates)}
+            onDelete={(id) => handleDeleteTransaction(id)}
         />
 
         <ExportButtons

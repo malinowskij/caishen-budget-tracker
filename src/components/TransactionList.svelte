@@ -1,61 +1,109 @@
 <script lang="ts">
     import type { Transaction, Category } from "../types";
+    import InlineTransactionEdit from "./InlineTransactionEdit.svelte";
 
     export let transactions: Transaction[];
     export let categories: Category[];
+    export let currency: string = "USD";
     export let onEdit: ((transaction: Transaction) => void) | undefined =
         undefined;
+    export let onSave:
+        | ((
+              id: string,
+              updates: Omit<Transaction, "id" | "createdAt" | "updatedAt">,
+          ) => void)
+        | undefined = undefined;
+    export let onDelete: ((id: string) => void) | undefined = undefined;
+
+    // Which transaction is being edited inline
+    let editingId: string | null = null;
 
     function getCategory(categoryId: string): Category | undefined {
         return categories.find((c) => c.id === categoryId);
     }
 
     function handleClick(txn: Transaction) {
-        if (onEdit) {
+        if (onSave) {
+            // Use inline editing if onSave is provided
+            editingId = txn.id;
+        } else if (onEdit) {
+            // Fall back to modal editing
             onEdit(txn);
         }
+    }
+
+    function handleInlineSave(
+        txn: Transaction,
+        updates: Omit<Transaction, "id" | "createdAt" | "updatedAt">,
+    ) {
+        if (onSave) {
+            onSave(txn.id, updates);
+        }
+        editingId = null;
+    }
+
+    function handleInlineCancel() {
+        editingId = null;
+    }
+
+    function handleInlineDelete(id: string) {
+        if (onDelete) {
+            onDelete(id);
+        }
+        editingId = null;
     }
 </script>
 
 {#if transactions.length > 0}
     <div class="transaction-list">
         {#each transactions as txn}
-            {@const category = getCategory(txn.category)}
-            <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-            <div
-                class="transaction-row"
-                class:clickable={!!onEdit}
-                on:click={() => handleClick(txn)}
-                on:keydown={(e) => e.key === "Enter" && handleClick(txn)}
-                role={onEdit ? "button" : undefined}
-                tabindex={onEdit ? 0 : undefined}
-            >
-                <div class="transaction-left">
-                    <span class="transaction-icon"
-                        >{category?.icon ?? "📦"}</span
-                    >
-                    <div class="transaction-details">
-                        <div class="transaction-category">
-                            {category?.name ?? txn.category}
-                        </div>
-                        <div class="transaction-desc">
-                            {txn.description || txn.date}
+            {#if editingId === txn.id}
+                <InlineTransactionEdit
+                    transaction={txn}
+                    {categories}
+                    {currency}
+                    on:save={(e) => handleInlineSave(txn, e.detail)}
+                    on:cancel={handleInlineCancel}
+                    on:delete={() => handleInlineDelete(txn.id)}
+                />
+            {:else}
+                {@const category = getCategory(txn.category)}
+                <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+                <div
+                    class="transaction-row"
+                    class:clickable={!!onEdit || !!onSave}
+                    on:click={() => handleClick(txn)}
+                    on:keydown={(e) => e.key === "Enter" && handleClick(txn)}
+                    role={onEdit || onSave ? "button" : undefined}
+                    tabindex={onEdit || onSave ? 0 : undefined}
+                >
+                    <div class="transaction-left">
+                        <span class="transaction-icon"
+                            >{category?.icon ?? "📦"}</span
+                        >
+                        <div class="transaction-details">
+                            <div class="transaction-category">
+                                {category?.name ?? txn.category}
+                            </div>
+                            <div class="transaction-desc">
+                                {txn.description || txn.date}
+                            </div>
                         </div>
                     </div>
+                    <div class="transaction-right">
+                        <span
+                            class={txn.type === "income"
+                                ? "amount-income"
+                                : "amount-expense"}
+                        >
+                            {txn.type === "income"
+                                ? "+"
+                                : "-"}{txn.amount.toFixed(2)}
+                            {txn.currency}
+                        </span>
+                    </div>
                 </div>
-                <div class="transaction-right">
-                    <span
-                        class={txn.type === "income"
-                            ? "amount-income"
-                            : "amount-expense"}
-                    >
-                        {txn.type === "income" ? "+" : "-"}{txn.amount.toFixed(
-                            2,
-                        )}
-                        {txn.currency}
-                    </span>
-                </div>
-            </div>
+            {/if}
         {/each}
     </div>
 {/if}

@@ -27,6 +27,7 @@ export interface IBudgetPlugin {
     openTransactionModal(defaultType?: 'income' | 'expense'): void;
     openEditTransactionModal(transaction: Transaction): void;
     saveSettings(): Promise<void>;
+    saveTransactionData(): Promise<void>;
     updateStatusBar(): void;
 }
 
