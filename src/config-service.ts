@@ -1,6 +1,6 @@
-import type { App, TFile } from 'obsidian';
-import type { BudgetPluginSettings, Category, RecurringTransaction } from './types';
-import type { Locale } from './i18n';
+import { TFile } from 'obsidian';
+import type { App } from 'obsidian';
+import type { BudgetPluginSettings } from './types';
 
 const CONFIG_FILE_NAME = '_config.md';
 
@@ -22,7 +22,7 @@ export class ConfigService {
     }
 
     // Check if config file exists
-    async configFileExists(): Promise<boolean> {
+    configFileExists(): boolean {
         const path = this.getConfigPath();
         return this.app.vault.getAbstractFileByPath(path) !== null;
     }
@@ -36,14 +36,14 @@ export class ConfigService {
             // Check if it's a TFile
             const tfile = this.app.vault.getAbstractFileByPath(path);
             if (!tfile) {
-                console.log(`[Budget] Config file not found: ${path}`);
+                console.debug(`[Budget] Config file not found: ${path}`);
                 return null;
             }
         }
 
         try {
-            const tfile = this.app.vault.getAbstractFileByPath(path) as TFile;
-            if (!tfile || !('extension' in tfile)) {
+            const tfile = this.app.vault.getAbstractFileByPath(path);
+            if (!tfile || !(tfile instanceof TFile)) {
                 return null;
             }
 
@@ -59,7 +59,7 @@ export class ConfigService {
     private parseYamlFrontmatter(content: string): BudgetPluginSettings | null {
         const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
         if (!frontmatterMatch) {
-            console.log('[Budget] No frontmatter found in config file');
+            console.debug('[Budget] No frontmatter found in config file');
             return null;
         }
 
@@ -68,7 +68,7 @@ export class ConfigService {
             const settings = this.parseYaml(yaml);
             // Debug: log parsed categories
             if (settings.categories) {
-                console.log('[Budget] Loaded categories from config:',
+                console.debug('[Budget] Loaded categories from config:',
                     (settings.categories as Array<{ id: string; parentId?: string }>).map(c => ({
                         id: c.id,
                         parentId: c.parentId
@@ -149,7 +149,7 @@ export class ConfigService {
                 const [, key, value] = objectPropMatch;
                 // Debug: show what's being parsed
                 if (key === 'parentId') {
-                    console.log('[Budget] Parser found parentId:', value, 'for object:', currentObject);
+                    console.debug('[Budget] Parser found parentId:', value, 'for object:', currentObject);
                 }
                 currentObject[key] = this.parseValue(value);
                 continue;
@@ -200,12 +200,12 @@ export class ConfigService {
             await this.ensureFolderExists(this.budgetFolder);
 
             const existingFile = this.app.vault.getAbstractFileByPath(path);
-            if (existingFile) {
-                await this.app.vault.modify(existingFile as TFile, content);
+            if (existingFile && existingFile instanceof TFile) {
+                await this.app.vault.modify(existingFile, content);
             } else {
                 await this.app.vault.create(path, content);
             }
-            console.log('[Budget] Config saved to markdown file');
+            console.debug('[Budget] Config saved to markdown file');
         } catch (err) {
             console.error('[Budget] Failed to save config to markdown:', err);
             throw err;
@@ -247,7 +247,7 @@ export class ConfigService {
                 yaml += `    budgetLimit: ${cat.budgetLimit}\n`;
             }
             if (cat.parentId) {
-                console.log('[Budget] Saving category with parentId:', cat.name, '->', cat.parentId);
+                console.debug('[Budget] Saving category with parentId:', cat.name, '->', cat.parentId);
                 yaml += `    parentId: ${cat.parentId}\n`;
             }
         }
@@ -277,7 +277,7 @@ export class ConfigService {
         // Savings Goals
         yaml += 'savingsGoals:\n';
         const savingsGoals = settings.savingsGoals || [];
-        console.log('[Budget] Saving savingsGoals to config:', savingsGoals.length, 'goals');
+        console.debug('[Budget] Saving savingsGoals to config:', savingsGoals.length, 'goals');
         if (savingsGoals.length === 0) {
             yaml += '  # No savings goals configured\n';
         } else {

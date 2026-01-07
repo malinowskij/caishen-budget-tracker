@@ -69,21 +69,18 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         this.addCommand({
             id: 'add-expense',
             name: trans.addExpense,
-            hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'e' }],
             callback: () => this.openTransactionModal('expense'),
         });
 
         this.addCommand({
             id: 'add-income',
             name: trans.addIncome,
-            hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'i' }],
             callback: () => this.openTransactionModal('income'),
         });
 
         this.addCommand({
             id: 'open-dashboard',
             name: trans.budgetDashboard,
-            hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'b' }],
             callback: () => this.openDashboard(),
         });
 
@@ -93,7 +90,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         // Process recurring transactions
         await this.processRecurringTransactions();
 
-        console.log('Budget Tracker plugin loaded');
+        console.debug('Budget Tracker plugin loaded');
     }
 
     async processRecurringTransactions() {
@@ -155,7 +152,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
 
                 item.lastProcessed = transactionDate;
                 hasChanges = true;
-                console.log(`Auto-added recurring: ${item.name} for ${monthKey}`);
+                console.debug(`Auto-added recurring: ${item.name} for ${monthKey}`);
 
                 // Move to next month
                 processDate.setMonth(processDate.getMonth() + 1);
@@ -169,7 +166,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
     }
 
     onunload() {
-        console.log('Budget Tracker plugin unloaded');
+        console.debug('Budget Tracker plugin unloaded');
     }
 
     async loadSettings() {
@@ -207,14 +204,14 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
 
             if (configFromMd) {
                 // Debug: show what's being merged
-                console.log('[Budget] Config from MD categories:', configFromMd.categories?.length,
+                console.debug('[Budget] Config from MD categories:', configFromMd.categories?.length,
                     'with parentId:', configFromMd.categories?.filter((c: { parentId?: string }) => c.parentId)?.length);
 
                 // Merge config from markdown (it takes priority)
                 this.settings = Object.assign({}, this.settings, configFromMd);
                 this._dataService.updateSettings(this.settings);
                 this._configService.updateBudgetFolder(this.settings.budgetFolder);
-                console.log('[Budget] Settings loaded from markdown config file');
+                console.debug('[Budget] Settings loaded from markdown config file');
             } else if (await this.shouldMigrateConfig()) {
                 // Config file doesn't exist but we have settings - migrate
                 await this.migrateConfigToMarkdown();
@@ -224,7 +221,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         }
     }
 
-    private async shouldMigrateConfig(): Promise<boolean> {
+    private shouldMigrateConfig(): boolean {
         // Migrate if we have categories (not default) but no config file
         return this.settings.categories.length > 0;
     }
@@ -233,7 +230,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         try {
             await this._configService.saveConfigToMarkdown(this.settings);
             new Notice('💾 Settings migrated to Budget/_config.md for sync');
-            console.log('[Budget] Settings migrated to markdown config file');
+            console.debug('[Budget] Settings migrated to markdown config file');
         } catch (err) {
             console.error('[Budget] Failed to migrate config:', err);
         }
@@ -270,14 +267,16 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         const modal = new TransactionModal(
             this.app,
             this.settings,
-            async (transactionData) => {
-                await this._dataService.addTransaction(transactionData);
-                await this.saveTransactionData();
-                this.updateStatusBar();
-                this.refreshDashboard();
-                const trans = t(this.settings.locale);
-                const typeLabel = transactionData.type === 'income' ? trans.income : trans.expense;
-                new Notice(`${trans.noticeTransactionAdded} ${typeLabel}: ${transactionData.amount} ${transactionData.currency}`);
+            (transactionData) => {
+                void (async () => {
+                    await this._dataService.addTransaction(transactionData);
+                    await this.saveTransactionData();
+                    this.updateStatusBar();
+                    this.refreshDashboard();
+                    const trans = t(this.settings.locale);
+                    const typeLabel = transactionData.type === 'income' ? trans.income : trans.expense;
+                    new Notice(`${trans.noticeTransactionAdded} ${typeLabel}: ${transactionData.amount} ${transactionData.currency}`);
+                })();
             },
             undefined,
             defaultType
@@ -290,23 +289,27 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         const modal = new TransactionModal(
             this.app,
             this.settings,
-            async (transactionData) => {
-                await this._dataService.updateTransaction(transaction.id, transactionData);
-                await this.saveTransactionData();
-                this.updateStatusBar();
-                this.refreshDashboard();
-                const trans = t(this.settings.locale);
-                new Notice(`✅ ${trans.saveChanges}`);
+            (transactionData) => {
+                void (async () => {
+                    await this._dataService.updateTransaction(transaction.id, transactionData);
+                    await this.saveTransactionData();
+                    this.updateStatusBar();
+                    this.refreshDashboard();
+                    const trans = t(this.settings.locale);
+                    new Notice(`✅ ${trans.saveChanges}`);
+                })();
             },
             transaction,
             undefined,
-            async () => {
-                await this._dataService.deleteTransaction(transaction.id);
-                await this.saveTransactionData();
-                this.updateStatusBar();
-                this.refreshDashboard();
-                const trans = t(this.settings.locale);
-                new Notice(`🗑️ ${trans.delete}`);
+            () => {
+                void (async () => {
+                    await this._dataService.deleteTransaction(transaction.id);
+                    await this.saveTransactionData();
+                    this.updateStatusBar();
+                    this.refreshDashboard();
+                    const trans = t(this.settings.locale);
+                    new Notice(`🗑️ ${trans.delete}`);
+                })();
             }
         );
 
@@ -399,38 +402,42 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
             this.app,
             trans,
             this.settings,
-            async (goalData) => {
-                if (existingGoal) {
-                    // Update existing goal
-                    const index = this.settings.savingsGoals.findIndex(g => g.id === existingGoal.id);
-                    if (index !== -1) {
-                        this.settings.savingsGoals[index] = {
-                            ...existingGoal,
+            (goalData) => {
+                void (async () => {
+                    if (existingGoal) {
+                        // Update existing goal
+                        const index = this.settings.savingsGoals.findIndex(g => g.id === existingGoal.id);
+                        if (index !== -1) {
+                            this.settings.savingsGoals[index] = {
+                                ...existingGoal,
+                                ...goalData,
+                            };
+                        }
+                    } else {
+                        // Add new goal
+                        const newGoal: SavingsGoal = {
+                            id: Date.now().toString(36) + Math.random().toString(36).substring(2, 7),
                             ...goalData,
+                            createdAt: new Date().toISOString(),
                         };
+                        this.settings.savingsGoals.push(newGoal);
                     }
-                } else {
-                    // Add new goal
-                    const newGoal: SavingsGoal = {
-                        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-                        ...goalData,
-                        createdAt: new Date().toISOString(),
-                    };
-                    this.settings.savingsGoals.push(newGoal);
-                }
-                await this.saveSettings();
-                this.refreshDashboard();
-            },
-            existingGoal,
-            existingGoal ? async () => {
-                // Delete goal
-                const index = this.settings.savingsGoals.findIndex(g => g.id === existingGoal.id);
-                if (index !== -1) {
-                    this.settings.savingsGoals.splice(index, 1);
                     await this.saveSettings();
                     this.refreshDashboard();
-                    new Notice(`🗑️ Goal "${existingGoal.name}" deleted`);
-                }
+                })();
+            },
+            existingGoal,
+            existingGoal ? () => {
+                void (async () => {
+                    // Delete goal
+                    const index = this.settings.savingsGoals.findIndex(g => g.id === existingGoal.id);
+                    if (index !== -1) {
+                        this.settings.savingsGoals.splice(index, 1);
+                        await this.saveSettings();
+                        this.refreshDashboard();
+                        new Notice(`🗑️ Goal "${existingGoal.name}" deleted`);
+                    }
+                })();
             } : undefined
         ).open();
     }
@@ -450,9 +457,9 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
     }
 
     // Open plugin settings tab
-    openSettings() {
-        // Casting to any to access internal settings API
-        const appWithSettings = this.app as any;
+    openSettings(): void {
+        // Use internal settings API
+        const appWithSettings = this.app as { setting?: { open: () => void; openTabById: (id: string) => void } };
         if (appWithSettings.setting) {
             appWithSettings.setting.open();
             appWithSettings.setting.openTabById(this.manifest.id);

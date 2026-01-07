@@ -3,8 +3,8 @@ import type { App } from 'obsidian';
 import type BudgetTrackerPlugin from './main';
 import type { Category, RecurringTransaction } from './types';
 import { getDefaultCategories } from './types';
-import type { Locale, Translations } from './i18n';
-import { t, translations } from './i18n';
+import type { Locale } from './i18n';
+import { t } from './i18n';
 import { RecurringModal } from './recurring-modal';
 
 export class BudgetSettingsTab extends PluginSettingTab {
@@ -20,10 +20,10 @@ export class BudgetSettingsTab extends PluginSettingTab {
         const trans = t(this.plugin.settings.locale);
         containerEl.empty();
 
-        containerEl.createEl('h1', { text: trans.settingsTitle });
+        new Setting(containerEl).setName(trans.settingsTitle).setHeading();
 
         // General settings section
-        containerEl.createEl('h2', { text: trans.general });
+        new Setting(containerEl).setName(trans.general).setHeading();
 
         // Language selector
         new Setting(containerEl)
@@ -75,7 +75,7 @@ export class BudgetSettingsTab extends PluginSettingTab {
                 }));
 
         // Categories section - Expenses
-        containerEl.createEl('h2', { text: trans.expenseCategories });
+        new Setting(containerEl).setName(trans.expenseCategories).setHeading();
 
         const expenseCategories = this.plugin.settings.categories.filter(c => c.type === 'expense');
         this.renderCategoryList(containerEl, expenseCategories, 'expense', trans);
@@ -86,7 +86,7 @@ export class BudgetSettingsTab extends PluginSettingTab {
                 .onClick(() => this.addNewCategory('expense')));
 
         // Categories section - Income
-        containerEl.createEl('h2', { text: trans.incomeCategories });
+        new Setting(containerEl).setName(trans.incomeCategories).setHeading();
 
         const incomeCategories = this.plugin.settings.categories.filter(c => c.type === 'income');
         this.renderCategoryList(containerEl, incomeCategories, 'income', trans);
@@ -97,11 +97,11 @@ export class BudgetSettingsTab extends PluginSettingTab {
                 .onClick(() => this.addNewCategory('income')));
 
         // Recurring Transactions section
-        containerEl.createEl('h2', { text: trans.recurringTransactions });
+        new Setting(containerEl).setName(trans.recurringTransactions).setHeading();
         this.renderRecurringList(containerEl, trans);
 
         // Reset to defaults
-        containerEl.createEl('h2', { text: trans.reset });
+        new Setting(containerEl).setName(trans.reset).setHeading();
 
         new Setting(containerEl)
             .setName(trans.restoreDefaultCategories)
@@ -149,9 +149,7 @@ export class BudgetSettingsTab extends PluginSettingTab {
 
         // Add indent styling for subcategories
         if (isSubcategory) {
-            setting.settingEl.style.paddingLeft = '30px';
-            setting.settingEl.style.borderLeft = '2px solid var(--background-modifier-border)';
-            setting.settingEl.style.marginLeft = '20px';
+            setting.settingEl.addClass('budget-subcategory-item');
         }
 
         // Edit name
@@ -165,7 +163,7 @@ export class BudgetSettingsTab extends PluginSettingTab {
 
         // Edit icon
         setting.addText(text => {
-            text.inputEl.style.width = '50px';
+            text.inputEl.addClass('budget-icon-input');
             text.setPlaceholder('🏷️')
                 .setValue(category.icon)
                 .onChange(async (value) => {
@@ -185,7 +183,7 @@ export class BudgetSettingsTab extends PluginSettingTab {
         // Budget limit (only for expense categories)
         if (category.type === 'expense') {
             setting.addText(text => {
-                text.inputEl.style.width = '80px';
+                text.inputEl.addClass('budget-limit-input');
                 text.inputEl.type = 'number';
                 text.setPlaceholder('0')
                     .setValue((category.budgetLimit ?? 0).toString())
@@ -263,7 +261,7 @@ export class BudgetSettingsTab extends PluginSettingTab {
         new Notice(trans.addedNewCategory);
     }
 
-    private renderRecurringList(containerEl: HTMLElement, trans: Translations) {
+    private renderRecurringList(containerEl: HTMLElement, trans: ReturnType<typeof t>) {
         const recurring = this.plugin.settings.recurringTransactions || [];
 
         for (const item of recurring) {
@@ -287,10 +285,12 @@ export class BudgetSettingsTab extends PluginSettingTab {
                     const modal = new RecurringModal(
                         this.app,
                         this.plugin.settings,
-                        async (updatedItem) => {
-                            Object.assign(item, updatedItem);
-                            await this.plugin.saveSettings();
-                            this.display();
+                        (updatedItem) => {
+                            void (async () => {
+                                Object.assign(item, updatedItem);
+                                await this.plugin.saveSettings();
+                                this.display();
+                            })();
                         },
                         item
                     );
@@ -320,17 +320,19 @@ export class BudgetSettingsTab extends PluginSettingTab {
                     const modal = new RecurringModal(
                         this.app,
                         this.plugin.settings,
-                        async (newItem) => {
-                            const fullItem: RecurringTransaction = {
-                                ...newItem,
-                                id: `recurring-${Date.now()}`,
-                            };
-                            if (!this.plugin.settings.recurringTransactions) {
-                                this.plugin.settings.recurringTransactions = [];
-                            }
-                            this.plugin.settings.recurringTransactions.push(fullItem);
-                            await this.plugin.saveSettings();
-                            this.display();
+                        (newItem) => {
+                            void (async () => {
+                                const fullItem: RecurringTransaction = {
+                                    ...newItem,
+                                    id: `recurring-${Date.now()}`,
+                                };
+                                if (!this.plugin.settings.recurringTransactions) {
+                                    this.plugin.settings.recurringTransactions = [];
+                                }
+                                this.plugin.settings.recurringTransactions.push(fullItem);
+                                await this.plugin.saveSettings();
+                                this.display();
+                            })();
                         }
                     );
                     modal.open();

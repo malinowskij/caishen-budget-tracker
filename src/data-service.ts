@@ -19,11 +19,11 @@ export class DataService {
 
     // Generate unique ID for transactions
     generateId(): string {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        return Date.now().toString(36) + Math.random().toString(36).substring(2);
     }
 
     // Load all transactions from plugin data
-    async loadTransactions(data: Record<string, unknown> | null): Promise<Transaction[]> {
+    loadTransactions(data: Record<string, unknown> | null): Transaction[] {
         if (data && Array.isArray(data.transactions)) {
             this.transactions = data.transactions as Transaction[];
         } else {
@@ -690,23 +690,23 @@ export class DataService {
         const budgetFolder = this.settings.budgetFolder;
         let importedCount = 0;
 
-        console.log(`[Budget] Starting sync from markdown files in folder: ${budgetFolder}`);
+        console.debug(`[Budget] Starting sync from markdown files in folder: ${budgetFolder}`);
 
         try {
             // Get all files in budget folder recursively
             const allFiles = this.app.vault.getFiles();
-            console.log(`[Budget] Total files in vault: ${allFiles.length}`);
+            console.debug(`[Budget] Total files in vault: ${allFiles.length}`);
 
             const files = allFiles.filter(f =>
                 f.path.startsWith(budgetFolder) && f.extension === 'md'
             );
-            console.log(`[Budget] Found ${files.length} markdown files in budget folder`);
+            console.debug(`[Budget] Found ${files.length} markdown files in budget folder`);
 
             for (const file of files) {
                 try {
                     const content = await this.app.vault.read(file);
                     const parsedTransactions = this.parseTransactionsFromMarkdown(content);
-                    console.log(`[Budget] File ${file.path}: parsed ${parsedTransactions.length} transactions`);
+                    console.debug(`[Budget] File ${file.path}: parsed ${parsedTransactions.length} transactions`);
 
                     for (const txn of parsedTransactions) {
                         if (!this.transactionExists(txn)) {
@@ -719,9 +719,9 @@ export class DataService {
                                 updatedAt: now,
                             });
                             importedCount++;
-                            console.log(`[Budget] Imported: ${txn.date} ${txn.type} ${txn.amount}`);
+                            console.debug(`[Budget] Imported: ${txn.date} ${txn.type} ${txn.amount}`);
                         } else {
-                            console.log(`[Budget] Skipped duplicate: ${txn.date} ${txn.type} ${txn.amount}`);
+                            console.debug(`[Budget] Skipped duplicate: ${txn.date} ${txn.type} ${txn.amount}`);
                         }
                     }
                 } catch (err) {
@@ -730,7 +730,7 @@ export class DataService {
             }
 
             if (importedCount > 0) {
-                console.log(`[Budget] Imported ${importedCount} transactions from markdown files`);
+                console.debug(`[Budget] Imported ${importedCount} transactions from markdown files`);
             }
         } catch (err) {
             console.error('[Budget] Error syncing from markdown files:', err);

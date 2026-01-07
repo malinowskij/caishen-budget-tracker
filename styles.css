@@ -464,3 +464,18 @@ body.is-phone .tab-btn {
     padding: 5px 8px;
     font-size: 10px;
 }
+
+/* Settings tab styles */
+.budget-subcategory-item {
+    padding-left: 30px !important;
+    border-left: 2px solid var(--background-modifier-border);
+    margin-left: 20px;
+}
+
+.budget-icon-input {
+    width: 50px;
+}
+
+.budget-limit-input {
+    width: 80px;
+}

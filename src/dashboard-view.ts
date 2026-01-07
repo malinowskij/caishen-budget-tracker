@@ -19,14 +19,14 @@ export class BudgetDashboardView extends ItemView {
     }
 
     getDisplayText(): string {
-        return '💰 Budget Dashboard';
+        return '💰 Budget dashboard';
     }
 
     getIcon(): string {
         return 'wallet';
     }
 
-    async onOpen() {
+    async onOpen(): Promise<void> {
         const container = this.containerEl.children[1];
         if (!container) return;
         container.empty();
@@ -39,18 +39,18 @@ export class BudgetDashboardView extends ItemView {
         });
     }
 
-    async onClose() {
+    async onClose(): Promise<void> {
         if (this.component) {
             this.component.$destroy();
             this.component = null;
         }
     }
 
-    refresh() {
+    refresh(): void {
         // Re-mount component to refresh data
         if (this.component) {
             this.component.$destroy();
         }
-        this.onOpen();
+        void this.onOpen();
     }
 }
