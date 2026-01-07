@@ -1,7 +1,7 @@
 {
     "id": "caishen-budget-tracker",
     "name": "Caishen - Budget Tracker",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "minAppVersion": "0.15.0",
     "description": "Intuitive budget management and expense tracking. Add transactions via forms, track spending by category, and view dashboards.",
     "author": "Jakub Malinowski",
