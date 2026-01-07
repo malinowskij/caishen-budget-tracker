@@ -448,4 +448,14 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
             }
         }
     }
+
+    // Open plugin settings tab
+    openSettings() {
+        // Casting to any to access internal settings API
+        const appWithSettings = this.app as any;
+        if (appWithSettings.setting) {
+            appWithSettings.setting.open();
+            appWithSettings.setting.openTabById(this.manifest.id);
+        }
+    }
 }

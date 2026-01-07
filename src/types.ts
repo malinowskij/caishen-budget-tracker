@@ -45,6 +45,7 @@ export interface IBudgetPlugin {
     updateStatusBar(): void;
     openSavingsGoalModal(existingGoal?: SavingsGoal): void;
     addToSavingsGoal(goalId: string, amount: number): Promise<void>;
+    openSettings(): void;
 }
 
 // Transaction represents a single income or expense entry

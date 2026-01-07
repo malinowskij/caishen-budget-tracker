@@ -113,6 +113,11 @@
         <button class="mod-cta" on:click={addExpense}>{trans.addExpense}</button
         >
         <button on:click={addIncome}>{trans.addIncome}</button>
+        <button
+            class="settings-btn"
+            on:click={() => plugin.openSettings()}
+            title={trans.settings}>⚙️</button
+        >
     </div>
 
     <!-- Summary Cards - Always visible -->
@@ -303,7 +308,27 @@
         display: flex;
         gap: 10px;
         justify-content: center;
+        align-items: center;
         margin-bottom: 24px;
+    }
+
+    .settings-btn {
+        padding: 4px 8px !important;
+        font-size: 18px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        opacity: 0.6;
+        transition:
+            opacity 0.2s ease,
+            transform 0.2s ease;
+        cursor: pointer;
+    }
+
+    .settings-btn:hover {
+        opacity: 1;
+        transform: rotate(45deg);
+        background: transparent !important;
     }
 
     /* Cards */
