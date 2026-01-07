@@ -241,9 +241,13 @@
         background: #e74c3c;
     }
 
-    @media (max-width: 600px) {
-        .yearly-summary {
-            grid-template-columns: repeat(2, 1fr);
-        }
+    /* Obsidian Mobile */
+    :global(body.is-mobile) .yearly-summary {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    :global(body.is-mobile) .summary-card .value {
+        font-size: 16px;
     }
 </style>

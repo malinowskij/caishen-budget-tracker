@@ -419,24 +419,36 @@ export class DataService {
         topCategories: { category: string; name: string; icon: string; average: number }[];
     } {
         const now = new Date();
-        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
 
-        // Get expenses from last 3 months
-        const recentExpenses = this.transactions.filter(t =>
-            t.type === 'expense' &&
-            new Date(t.date) >= threeMonthsAgo
+        // Get all expenses
+        const allExpenses = this.transactions.filter(t => t.type === 'expense');
+
+        if (allExpenses.length === 0) {
+            return { daily: 0, weekly: 0, monthly: 0, topCategories: [] };
+        }
+
+        // Find the earliest expense date
+        const expenseDates = allExpenses.map(t => new Date(t.date).getTime());
+        const earliestDate = new Date(Math.min(...expenseDates));
+
+        // Calculate days since first expense (minimum 1 day)
+        const daysDiff = Math.max(1, Math.ceil((now.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+        // Calculate months since first expense (minimum 1 month for monthly average)
+        const monthsDiff = Math.max(1,
+            (now.getFullYear() - earliestDate.getFullYear()) * 12 +
+            (now.getMonth() - earliestDate.getMonth()) + 1
         );
 
-        const totalExpense = recentExpenses.reduce((sum, t) => sum + t.amount, 0);
-        const daysDiff = Math.max(1, Math.ceil((now.getTime() - threeMonthsAgo.getTime()) / (1000 * 60 * 60 * 24)));
+        const totalExpense = allExpenses.reduce((sum, t) => sum + t.amount, 0);
 
         const daily = totalExpense / daysDiff;
         const weekly = daily * 7;
-        const monthly = totalExpense / 3;
+        const monthly = totalExpense / monthsDiff;
 
         // Calculate category averages
         const categoryTotals: Record<string, number> = {};
-        for (const t of recentExpenses) {
+        for (const t of allExpenses) {
             categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
         }
 
@@ -447,7 +459,7 @@ export class DataService {
                     category: categoryId,
                     name: cat?.name || categoryId,
                     icon: cat?.icon || '📦',
-                    average: total / 3, // 3 months
+                    average: total / monthsDiff,
                 };
             })
             .sort((a, b) => b.average - a.average)
@@ -455,7 +467,6 @@ export class DataService {
 
         return { daily, weekly, monthly, topCategories };
     }
-
     // Get category trends over time (with hierarchy - subcategories aggregated to parents)
     getCategoryTrends(months: number = 6): Array<{
         category: string;

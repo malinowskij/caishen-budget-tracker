@@ -392,3 +392,75 @@
     border-radius: var(--budget-radius-sm);
     margin: 16px 0;
 }
+
+/* ================================================
+   Obsidian Mobile Styles (using platform classes)
+   ================================================ */
+
+/* Mobile devices (both phone and tablet) */
+body.is-mobile .budget-dashboard {
+    padding: 16px;
+}
+
+body.is-mobile .budget-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+body.is-mobile .budget-card .card-value {
+    font-size: 22px;
+    word-break: break-word;
+}
+
+body.is-mobile .budget-actions {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+body.is-mobile .budget-actions button {
+    flex: 1;
+    min-width: 100px;
+}
+
+body.is-mobile .tab-nav {
+    overflow-x: auto;
+    justify-content: flex-start;
+    width: 100%;
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.is-mobile .tab-btn {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+body.is-mobile .transaction-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+}
+
+body.is-mobile .budget-section {
+    padding: 16px;
+}
+
+/* Phone-specific (even more compact) */
+body.is-phone .budget-dashboard-header h1 {
+    font-size: 1.6em;
+}
+
+body.is-phone .budget-card .card-value {
+    font-size: 20px;
+}
+
+body.is-phone .budget-card .card-label {
+    font-size: 11px;
+}
+
+body.is-phone .tab-btn {
+    padding: 5px 8px;
+    font-size: 10px;
+}

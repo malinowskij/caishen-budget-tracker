@@ -156,9 +156,12 @@
         color: #e74c3c;
     }
 
-    @media (max-width: 500px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
+    /* Obsidian Mobile */
+    :global(body.is-mobile) .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    :global(body.is-mobile) .stat-value {
+        font-size: 14px;
     }
 </style>
