@@ -1,181 +1,89 @@
-# 💰 Obsidian Budget Tracker
+# Caishen - Budget Tracker
 
-An intuitive budget management and expense tracking plugin for [Obsidian](https://obsidian.md/). Track your income and expenses with a beautiful dashboard – no Markdown or Dataview queries required.
+**Caishen** (God of Wealth) is a modern, privacy-focused budget management plugin for Obsidian. It helps you track your expenses, income, and savings goals directly within your vault, featuring a stunning "Vibrant Glass" dashboard.
 
-Built with **Svelte** for a reactive, modern UI experience.
+![Dashboard Preview](https://github.com/malinowskij/budget-tracker/raw/main/images/dashboard-preview.png)
+*(Note: Add a screenshot of your dashboard here)*
 
-![Dashboard Preview](docs/dashboard-preview.png)
+## ✨ Features & Visual Tour
 
-## ✨ Features
+### 📊 Comprehensive Dashboard
+Get a complete overview of your finances at a glance. Track income, expenses, and balance in real-time.
+![Dashboard Overview](images/dashboard/overview.png)
 
-### 📊 Dashboard
-- **Monthly Overview** – View income, expenses, and balance at a glance
-- **Pie Chart** – Visual breakdown of expenses by category
-- **Trend Chart** – 6-month income vs expense comparison
-- **Budget Progress** – Track spending against category limits with warnings at 80% and 100%
+### 💸 Easy Transaction Entry
+Quickly add income and expenses with intuitive forms. Support for recurring transactions included.
+<p align="center">
+  <img src="images/forms/add_expense.png" width="48%" />
+  <img src="images/forms/add_income.png" width="48%" />
+</p>
 
-### 💳 Transaction Management
-- **Quick Add** – Add transactions via ribbon icon, command palette, or dashboard
-- **Edit & Delete** – Click any transaction to edit or remove it
-- **Search & Filter** – Filter by date range, category, type, or description
-- **Auto-organized Files** – Transactions saved to `Budget/YYYY/MM-Month.md`
+### 📈 Deep Analytics
+Analyze spending trends over time and compare monthly performance.
+![Analytics](images/dashboard/analytics.png)
 
-### 🔄 Recurring Transactions
-- **Set Up Once** – Define monthly recurring income or expenses
-- **Auto-add** – Transactions are automatically added on specified day each month
-- **Toggle On/Off** – Disable without deleting
+### 🧩 Smart Categorization
+Visualize your spending by category to see exactly where your money goes.
+![Category Breakdown](images/dashboard/by_category.png)
 
-### 🎯 Monthly Budgets
-- **Category Limits** – Set spending limits per expense category
-- **Progress Bars** – Visual indication of how much budget remains
-- **Warnings** – Alerts when approaching (80%) or exceeding (100%) limits
+### 🎯 Savings Goals
+Set financial targets and track your progress towards them.
+![Savings Goals](images/dashboard/goals.png)
 
-### 📤 Export
-- **CSV Export** – Download transactions for spreadsheet analysis
-- **JSON Backup** – Full data export for backup purposes
+### 📝 Transaction History
+View and manage your recent activity in a clean, list format.
+![Transactions](images/dashboard/transactions.png)
 
-### 🌍 Internationalization
-- **English** 🇬🇧 and **Polish** 🇵🇱 (auto-detected)
-- Easily extensible for other languages
+## ⚙️ Configuration
+Customize categories, currency, and language settings to fit your needs.
+<p align="center">
+  <img src="images/forms/main_settings_1.png" width="48%" />
+  <img src="images/forms/main_settings_2.png" width="48%" />
+</p>
 
-### ⚙️ Customization
-- **Custom Categories** – Add, edit, or remove expense/income categories
-- **Category Icons & Colors** – Personalize your categories
-- **Default Currency** – Set your preferred currency
-- **Status Bar** – Optional balance display in Obsidian's status bar
+## 🚀 How to Use
 
-### 📱 Multi-platform
-- Works on **Desktop** (Windows, macOS, Linux) and **Mobile** (iOS, Android)
-
----
-
-## 🚀 Installation
-
-### Via Community Plugins
-1. Open **Settings** → **Community plugins**
-2. Click **Browse** and search for `Budget Tracker`
-3. Click **Install**, then **Enable**
-
-### Manual Installation
-1. Download the latest release: `main.js`, `manifest.json`, `styles.css`
-2. Create folder `.obsidian/plugins/budget-tracker/` in your vault
-3. Copy downloaded files into that folder
-4. Enable **Budget Tracker** in Settings → Community plugins
-
----
-
-## 🎮 Usage
+### Opening the Dashboard
+1. Click the **Ribbon Icon** (Money Bag 💰) on the left sidebar.
+2. Or open the Command Palette (`Ctrl/Cmd + P`) and search for **"Open Budget Dashboard"**.
 
 ### Adding Transactions
-- **Ribbon Icon** – Click 💰 in the left sidebar
-- **Command Palette** (`Ctrl/Cmd + P`):
-  - `Add Transaction` – Opens add dialog
-  - `Add Expense` – Opens with expense pre-selected
-  - `Add Income` – Opens with income pre-selected
-  - `Open Budget Dashboard` – Opens the main dashboard
+- Click the **+ Add Expense** or **+ Add Income** buttons on the dashboard.
+- Fill in the amount, category, and optional details.
+- Use the **Recurring** toggle if this is a repeating payment (e.g., subscription, rent).
 
-### Dashboard Features
-| Feature | Description |
-|---------|-------------|
-| Summary Cards | Income, Expenses, Balance for current month |
-| Budget Progress | Spending vs limits for each category |
-| Pie Chart | Visual expense breakdown |
-| Trend Chart | 6-month income/expense history |
-| Transaction List | Recent transactions with search & filters |
-| Export Buttons | Download CSV or JSON |
+### Managing Categories
+- Go to **Settings > Categories** to manage your structure.
+- Drag and drop to reorder or nest categories (if supported in future updates) or use the tree view to organize.
 
-### Settings
-Access via **Settings** → **Budget Tracker**:
-- Change language
-- Set budget folder location
-- Configure default currency
-- Manage expense/income categories
-- Set category budget limits
-- Manage recurring transactions
+### Data & Analytics
+- The specific **Analytics** tab provides yearly overviews and deeper insights into your spending habits.
+- **Savings Rate** is automatically calculated based on your income vs. expenses.
 
----
+## ⚙️ Settings
 
-## 🛠️ Development
+- **Currency**: Set your preferred currency symbol (e.g., $, €, PLN).
+- **Language**: Switch between English and Polish.
+- **Notifications**: Configure when to be alerted about upcoming recurring transactions.
 
-### Tech Stack
-- **TypeScript** – Type-safe code
-- **Svelte** – Reactive UI components
-- **Vite** – Fast build tool
-- **Obsidian API** – Plugin integration
+## 📥 Installation
 
-### Getting Started
+### From Community Plugins
+1. Open Obsidian functionality **Settings** > **Community plugins**.
+2. Turn off "Restricted mode".
+3. Click **Browse** and search for **"Caishen Budget Tracker"**.
+4. Click **Install** and then **Enable**.
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/obsidian-budget-tracker.git
-cd obsidian-budget-tracker
+### Manual Installation
+1. Download the `main.js`, `manifest.json`, and `styles.css` from the latest Release.
+2. Create a folder named `caishen-budget-tracker` in your vault's `.obsidian/plugins/` directory.
+3. Put the downloaded files into that folder.
+4. Reload Obsidian and enable the plugin.
 
-# Install dependencies
-npm install
+## 🤝 Support & Contributing
 
-# Development build with watch
-npm run dev
+If you find a bug or have a feature request, please [open an issue](https://github.com/malinowskij/budget-tracker/issues) on GitHub.
 
-# Production build
-npm run build
+## � License
 
-# Type-check Svelte components
-npm run check
-```
-
-### Project Structure
-
-```
-src/
-├── main.ts                 # Plugin entry point
-├── types.ts                # TypeScript interfaces
-├── constants.ts            # Shared constants
-├── i18n.ts                 # Translations (en, pl)
-├── data-service.ts         # Data management & Markdown generation
-├── settings.ts             # Settings panel
-├── dashboard-view.ts       # Obsidian view wrapper
-├── transaction-modal.ts    # Transaction modal wrapper
-├── recurring-modal.ts      # Recurring transaction modal
-└── components/
-    ├── Dashboard.svelte        # Main dashboard
-    ├── TransactionForm.svelte  # Add/edit transaction form
-    ├── TransactionList.svelte  # Transaction list with click-to-edit
-    ├── TransactionFilters.svelte # Search & filter UI
-    ├── CategoryBar.svelte      # Category progress bar
-    ├── TrendChart.svelte       # 6-month trend visualization
-    ├── PieChart.svelte         # Expense breakdown chart
-    ├── BudgetProgress.svelte   # Budget limit progress bars
-    ├── ExportButtons.svelte    # CSV/JSON export
-    ├── RecurringForm.svelte    # Recurring transaction form
-    └── RecurringTransactions.svelte # Recurring list component
-```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
-
-## 📜 License
-
-MIT License – see [LICENSE](LICENSE) for details.
-
----
-
-## 🙏 Acknowledgments
-
-- [Obsidian](https://obsidian.md/) for the amazing knowledge base app
-- [Svelte](https://svelte.dev/) for the reactive UI framework
-- All contributors and users who provide valuable feedback
-
----
-
-**Made with ❤️ for the Obsidian community**
+MIT License. See [LICENSE](LICENSE) for more information.
