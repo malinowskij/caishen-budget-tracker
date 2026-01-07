@@ -1,9 +1,9 @@
 {
-    "id": "budget-tracker",
-    "name": "Budget Tracker",
+    "id": "caishen-budget-tracker",
+    "name": "Caishen - Budget Tracker",
     "version": "1.0.0",
     "minAppVersion": "0.15.0",
     "description": "Intuitive budget management and expense tracking for Obsidian. Add transactions via forms, track spending by category, and view dashboards.",
-    "author": "Jakub",
+    "author": "Jakub Malinowski",
     "isDesktopOnly": false
 }
