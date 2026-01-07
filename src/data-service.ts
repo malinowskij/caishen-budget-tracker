@@ -291,6 +291,61 @@ export class DataService {
         return result.sort((a, b) => b.amount - a.amount);
     }
 
+    // Get hierarchical category breakdown with subcategories aggregated to parents
+    getHierarchicalCategoryBreakdown(year: number, month: number): Array<{ category: string; name: string; amount: number; color: string; icon: string; subcategories?: Array<{ category: string; name: string; amount: number; color: string; icon: string }> }> {
+        const summary = this.getMonthlySummary(year, month);
+
+        // Get all expense categories
+        const expenseCategories = this.settings.categories.filter(c => c.type === 'expense' || c.type === 'both');
+
+        // Identify parent categories (no parentId) and subcategories
+        const parentCategories = expenseCategories.filter(c => !c.parentId);
+        const getSubcategories = (parentId: string) => expenseCategories.filter(c => c.parentId === parentId);
+
+        const result: Array<{ category: string; name: string; amount: number; color: string; icon: string; subcategories?: Array<{ category: string; name: string; amount: number; color: string; icon: string }> }> = [];
+
+        for (const parent of parentCategories) {
+            const subcats = getSubcategories(parent.id);
+
+            // Get direct amount for parent category
+            const directAmount = summary.byCategory[parent.id] || 0;
+
+            // Build subcategories array and sum their amounts
+            const subcategoriesData: Array<{ category: string; name: string; amount: number; color: string; icon: string }> = [];
+            let subcatTotal = 0;
+
+            for (const sub of subcats) {
+                const subAmount = summary.byCategory[sub.id] || 0;
+                if (subAmount > 0) {
+                    subcatTotal += subAmount;
+                    subcategoriesData.push({
+                        category: sub.id,
+                        name: sub.name,
+                        amount: subAmount,
+                        color: sub.color,
+                        icon: sub.icon,
+                    });
+                }
+            }
+
+            // Total = direct + all subcategories
+            const totalAmount = directAmount + subcatTotal;
+
+            if (totalAmount > 0) {
+                result.push({
+                    category: parent.id,
+                    name: parent.name,
+                    amount: totalAmount,
+                    color: parent.color,
+                    icon: parent.icon,
+                    subcategories: subcategoriesData.length > 0 ? subcategoriesData.sort((a, b) => b.amount - a.amount) : undefined,
+                });
+            }
+        }
+
+        return result.sort((a, b) => b.amount - a.amount);
+    }
+
     // Get recent transactions
     getRecentTransactions(limit: number = 10): Transaction[] {
         return [...this.transactions]
@@ -401,29 +456,31 @@ export class DataService {
         return { daily, weekly, monthly, topCategories };
     }
 
-    // Get category trends over time
+    // Get category trends over time (with hierarchy - subcategories aggregated to parents)
     getCategoryTrends(months: number = 6): Array<{
         category: string;
         name: string;
         icon: string;
         color: string;
         data: { month: string; amount: number }[];
-    }> {
-        const now = new Date();
-        const result: Array<{
+        subcategories?: Array<{
             category: string;
             name: string;
             icon: string;
             color: string;
             data: { month: string; amount: number }[];
-        }> = [];
+        }>;
+    }> {
+        const now = new Date();
 
-        // Get expense categories only
-        const expenseCategories = this.settings.categories.filter(c => c.type === 'expense');
+        // Get expense categories
+        const expenseCategories = this.settings.categories.filter(c => c.type === 'expense' || c.type === 'both');
+        const parentCategories = expenseCategories.filter(c => !c.parentId);
+        const getSubcategories = (parentId: string) => expenseCategories.filter(c => c.parentId === parentId);
 
-        for (const cat of expenseCategories) {
+        // Helper to get trend data for a category (and optionally its children)
+        const getTrendData = (categoryIds: string[]): { month: string; amount: number }[] => {
             const data: { month: string; amount: number }[] = [];
-            let hasData = false;
 
             for (let i = months - 1; i >= 0; i--) {
                 const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -432,25 +489,75 @@ export class DataService {
                 const monthKey = `${year}-${String(month).padStart(2, '0')}`;
 
                 const monthTransactions = this.transactions.filter(t =>
-                    t.category === cat.id &&
+                    categoryIds.includes(t.category) &&
                     t.type === 'expense' &&
                     t.date.startsWith(monthKey)
                 );
 
                 const amount = monthTransactions.reduce((sum, t) => sum + t.amount, 0);
-                if (amount > 0) hasData = true;
-
                 data.push({ month: monthKey, amount });
             }
 
-            // Only include categories with data
+            return data;
+        };
+
+        const result: Array<{
+            category: string;
+            name: string;
+            icon: string;
+            color: string;
+            data: { month: string; amount: number }[];
+            subcategories?: Array<{
+                category: string;
+                name: string;
+                icon: string;
+                color: string;
+                data: { month: string; amount: number }[];
+            }>;
+        }> = [];
+
+        for (const parent of parentCategories) {
+            const subcats = getSubcategories(parent.id);
+
+            // Get IDs for parent + all subcategories
+            const allCategoryIds = [parent.id, ...subcats.map(s => s.id)];
+
+            // Get aggregated trend data
+            const data = getTrendData(allCategoryIds);
+            const hasData = data.some(d => d.amount > 0);
+
             if (hasData) {
+                // Build subcategories trends
+                const subcategoriesData: Array<{
+                    category: string;
+                    name: string;
+                    icon: string;
+                    color: string;
+                    data: { month: string; amount: number }[];
+                }> = [];
+
+                for (const sub of subcats) {
+                    const subData = getTrendData([sub.id]);
+                    const subHasData = subData.some(d => d.amount > 0);
+
+                    if (subHasData) {
+                        subcategoriesData.push({
+                            category: sub.id,
+                            name: sub.name,
+                            icon: sub.icon,
+                            color: sub.color,
+                            data: subData,
+                        });
+                    }
+                }
+
                 result.push({
-                    category: cat.id,
-                    name: cat.name,
-                    icon: cat.icon,
-                    color: cat.color,
+                    category: parent.id,
+                    name: parent.name,
+                    icon: parent.icon,
+                    color: parent.color,
                     data,
+                    subcategories: subcategoriesData.length > 0 ? subcategoriesData : undefined,
                 });
             }
         }

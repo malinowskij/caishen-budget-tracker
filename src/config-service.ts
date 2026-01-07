@@ -66,6 +66,15 @@ export class ConfigService {
         try {
             const yaml = frontmatterMatch[1];
             const settings = this.parseYaml(yaml);
+            // Debug: log parsed categories
+            if (settings.categories) {
+                console.log('[Budget] Loaded categories from config:',
+                    (settings.categories as Array<{ id: string; parentId?: string }>).map(c => ({
+                        id: c.id,
+                        parentId: c.parentId
+                    }))
+                );
+            }
             return settings as BudgetPluginSettings;
         } catch (err) {
             console.error('[Budget] Failed to parse config YAML:', err);
@@ -91,8 +100,21 @@ export class ConfigService {
             if (topLevelMatch) {
                 // Save previous array if exists
                 if (currentArray && arrayItems.length > 0) {
+                    // Push the last object before saving the array
+                    if (currentObject) {
+                        arrayItems.push(currentObject);
+                        currentObject = null;
+                    }
                     (result as Record<string, unknown>)[currentArray] = arrayItems;
                     arrayItems = [];
+                } else if (currentObject) {
+                    // Edge case: single object in array
+                    arrayItems.push(currentObject);
+                    if (currentArray) {
+                        (result as Record<string, unknown>)[currentArray] = arrayItems;
+                    }
+                    arrayItems = [];
+                    currentObject = null;
                 }
 
                 const [, key, value] = topLevelMatch;
@@ -125,6 +147,10 @@ export class ConfigService {
             const objectPropMatch = line.match(/^\s+(\w+):\s*(.*)$/);
             if (objectPropMatch && currentObject) {
                 const [, key, value] = objectPropMatch;
+                // Debug: show what's being parsed
+                if (key === 'parentId') {
+                    console.log('[Budget] Parser found parentId:', value, 'for object:', currentObject);
+                }
                 currentObject[key] = this.parseValue(value);
                 continue;
             }
@@ -205,7 +231,8 @@ export class ConfigService {
         yaml += `budgetFolder: ${settings.budgetFolder}\n`;
         yaml += `showBalanceInStatusBar: ${settings.showBalanceInStatusBar}\n`;
         yaml += `dateFormat: ${settings.dateFormat}\n`;
-        yaml += `currencies: [${settings.currencies.map(c => `"${c}"`).join(', ')}]\n`;
+        const currenciesArray = Array.isArray(settings.currencies) ? settings.currencies : [];
+        yaml += `currencies: [${currenciesArray.map(c => `"${c}"`).join(', ')}]\n`;
         yaml += '\n';
 
         // Categories
@@ -218,6 +245,10 @@ export class ConfigService {
             yaml += `    color: "${cat.color}"\n`;
             if (cat.budgetLimit !== undefined && cat.budgetLimit > 0) {
                 yaml += `    budgetLimit: ${cat.budgetLimit}\n`;
+            }
+            if (cat.parentId) {
+                console.log('[Budget] Saving category with parentId:', cat.name, '->', cat.parentId);
+                yaml += `    parentId: ${cat.parentId}\n`;
             }
         }
         yaml += '\n';

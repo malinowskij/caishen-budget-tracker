@@ -27,6 +27,17 @@
         (c) => c.type === type || c.type === "both",
     );
 
+    // Group categories: parents first, then subcategories
+    $: parentCategories = filteredCategories.filter((c) => !c.parentId);
+    $: getSubcategories = (parentId: string) =>
+        filteredCategories.filter((c) => c.parentId === parentId);
+    $: standaloneCategories = filteredCategories.filter(
+        (c) => !c.parentId && getSubcategories(c.id).length === 0,
+    );
+    $: parentWithChildren = parentCategories.filter(
+        (c) => getSubcategories(c.id).length > 0,
+    );
+
     // Set default category when type changes
     $: if (
         filteredCategories.length > 0 &&
@@ -114,8 +125,22 @@
         </div>
         <div class="setting-item-control">
             <select bind:value={category}>
-                {#each filteredCategories as cat}
+                <!-- Standalone categories (no children) -->
+                {#each standaloneCategories as cat}
                     <option value={cat.id}>{cat.icon} {cat.name}</option>
+                {/each}
+                <!-- Parent categories with subcategories -->
+                {#each parentWithChildren as parent}
+                    <optgroup label="{parent.icon} {parent.name}">
+                        <option value={parent.id}
+                            >{parent.icon} {parent.name} (all)</option
+                        >
+                        {#each getSubcategories(parent.id) as sub}
+                            <option value={sub.id}
+                                >↳ {sub.icon} {sub.name}</option
+                            >
+                        {/each}
+                    </optgroup>
                 {/each}
             </select>
         </div>

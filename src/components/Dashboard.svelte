@@ -22,6 +22,8 @@
     $: month = now.getMonth() + 1;
     $: monthName = trans.months[month - 1] ?? "Unknown";
     $: breakdown = plugin.dataService.getCategoryBreakdown(year, month);
+    $: hierarchicalBreakdown =
+        plugin.dataService.getHierarchicalCategoryBreakdown(year, month);
     $: trends = plugin.dataService.getMonthlyTrends(6);
     $: spentByCategory = Object.fromEntries(
         breakdown.map((b) => [b.category, b.amount]),
@@ -67,6 +69,8 @@
     function refresh() {
         summary = plugin.dataService.getCurrentMonthSummary();
         breakdown = plugin.dataService.getCategoryBreakdown(year, month);
+        hierarchicalBreakdown =
+            plugin.dataService.getHierarchicalCategoryBreakdown(year, month);
         trends = plugin.dataService.getMonthlyTrends(6);
         filteredTransactions =
             Object.keys(filter).length > 0
@@ -180,11 +184,13 @@
                         {trans}
                     />
                     <div class="category-breakdown" style="margin-top: 16px;">
-                        {#each breakdown as item}
+                        {#each hierarchicalBreakdown as item}
                             <CategoryBar
                                 {item}
                                 maxAmount={Math.max(
-                                    ...breakdown.map((b) => b.amount),
+                                    ...hierarchicalBreakdown.map(
+                                        (b) => b.amount,
+                                    ),
                                 )}
                                 currency={plugin.settings.defaultCurrency}
                             />

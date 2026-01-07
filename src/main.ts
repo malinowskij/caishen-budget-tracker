@@ -206,6 +206,10 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
             const configFromMd = await this._configService.loadConfigFromMarkdown();
 
             if (configFromMd) {
+                // Debug: show what's being merged
+                console.log('[Budget] Config from MD categories:', configFromMd.categories?.length,
+                    'with parentId:', configFromMd.categories?.filter((c: { parentId?: string }) => c.parentId)?.length);
+
                 // Merge config from markdown (it takes priority)
                 this.settings = Object.assign({}, this.settings, configFromMd);
                 this._dataService.updateSettings(this.settings);

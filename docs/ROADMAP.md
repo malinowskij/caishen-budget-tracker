@@ -39,11 +39,9 @@ _Nothing currently in progress_
 - [ ] Remove debug logging from sync
 - [ ] Mobile optimization testing
 
-### v1.3 - Advanced Features
-- [ ] Savings goals with progress tracking
-- [ ] Transaction tags (in addition to categories)
-- [ ] Subcategories support
-- [ ] Recurring transaction notifications
+### v1.3 - Nice to Have
+- [ ] Tag filtering in transaction list
+- [ ] Category hierarchy in breakdown charts
 
 ---
 

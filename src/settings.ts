@@ -118,67 +118,132 @@ export class BudgetSettingsTab extends PluginSettingTab {
     }
 
     private renderCategoryList(containerEl: HTMLElement, categories: Category[], type: 'income' | 'expense', trans: ReturnType<typeof t>) {
-        for (const category of categories) {
-            const setting = new Setting(containerEl)
-                .setName(`${category.icon} ${category.name}`)
-                .setDesc(`${trans.categoryId} ${category.id}`);
+        // Separate parent categories and subcategories
+        const parentCategories = categories.filter(c => !c.parentId);
+        const getSubcategories = (parentId: string) => categories.filter(c => c.parentId === parentId);
 
-            // Edit name
-            setting.addText(text => text
-                .setPlaceholder(trans.categoryName)
-                .setValue(category.name)
+        for (const category of parentCategories) {
+            const subcategories = getSubcategories(category.id);
+
+            // Render parent category
+            this.renderCategoryItem(containerEl, category, trans, false, subcategories.length > 0);
+
+            // Render subcategories with indent
+            for (const sub of subcategories) {
+                this.renderCategoryItem(containerEl, sub, trans, true, false);
+            }
+        }
+    }
+
+    private renderCategoryItem(
+        containerEl: HTMLElement,
+        category: Category,
+        trans: ReturnType<typeof t>,
+        isSubcategory: boolean,
+        hasChildren: boolean
+    ) {
+        const prefix = isSubcategory ? '↳ ' : '';
+        const setting = new Setting(containerEl)
+            .setName(`${prefix}${category.icon} ${category.name}`)
+            .setDesc(isSubcategory ? trans.subcategory : (hasChildren ? trans.parentCategory : ''));
+
+        // Add indent styling for subcategories
+        if (isSubcategory) {
+            setting.settingEl.style.paddingLeft = '30px';
+            setting.settingEl.style.borderLeft = '2px solid var(--background-modifier-border)';
+            setting.settingEl.style.marginLeft = '20px';
+        }
+
+        // Edit name
+        setting.addText(text => text
+            .setPlaceholder(trans.categoryName)
+            .setValue(category.name)
+            .onChange(async (value) => {
+                category.name = value;
+                await this.plugin.saveSettings();
+            }));
+
+        // Edit icon
+        setting.addText(text => {
+            text.inputEl.style.width = '50px';
+            text.setPlaceholder('🏷️')
+                .setValue(category.icon)
                 .onChange(async (value) => {
-                    category.name = value;
+                    category.icon = value;
                     await this.plugin.saveSettings();
-                }));
+                });
+        });
 
-            // Edit icon
+        // Color picker
+        setting.addColorPicker(picker => picker
+            .setValue(category.color)
+            .onChange(async (value) => {
+                category.color = value;
+                await this.plugin.saveSettings();
+            }));
+
+        // Budget limit (only for expense categories)
+        if (category.type === 'expense') {
             setting.addText(text => {
-                text.inputEl.style.width = '50px';
-                text.setPlaceholder('🏷️')
-                    .setValue(category.icon)
+                text.inputEl.style.width = '80px';
+                text.inputEl.type = 'number';
+                text.setPlaceholder('0')
+                    .setValue((category.budgetLimit ?? 0).toString())
                     .onChange(async (value) => {
-                        category.icon = value;
+                        category.budgetLimit = parseFloat(value) || 0;
                         await this.plugin.saveSettings();
                     });
             });
-
-            // Color picker
-            setting.addColorPicker(picker => picker
-                .setValue(category.color)
-                .onChange(async (value) => {
-                    category.color = value;
-                    await this.plugin.saveSettings();
-                }));
-
-            // Budget limit (only for expense categories)
-            if (category.type === 'expense') {
-                setting.addText(text => {
-                    text.inputEl.style.width = '80px';
-                    text.inputEl.type = 'number';
-                    text.setPlaceholder('0')
-                        .setValue((category.budgetLimit ?? 0).toString())
-                        .onChange(async (value) => {
-                            category.budgetLimit = parseFloat(value) || 0;
-                            await this.plugin.saveSettings();
-                        });
-                });
-            }
-
-            // Delete button
-            setting.addButton(button => button
-                .setIcon('trash')
-                .setWarning()
-                .onClick(async () => {
-                    const index = this.plugin.settings.categories.findIndex(c => c.id === category.id);
-                    if (index > -1) {
-                        this.plugin.settings.categories.splice(index, 1);
-                        await this.plugin.saveSettings();
-                        this.display();
-                        new Notice(`${trans.deletedCategory} ${category.name}`);
-                    }
-                }));
         }
+
+        // Add subcategory button (only for parent categories)
+        if (!isSubcategory) {
+            setting.addButton(button => button
+                .setIcon('plus')
+                .setTooltip(trans.subcategory)
+                .onClick(() => this.addSubcategory(category)));
+        }
+
+        // Delete button
+        setting.addButton(button => button
+            .setIcon('trash')
+            .setWarning()
+            .onClick(async () => {
+                // Also delete subcategories
+                const subcats = this.plugin.settings.categories.filter(c => c.parentId === category.id);
+                for (const sub of subcats) {
+                    const subIndex = this.plugin.settings.categories.findIndex(c => c.id === sub.id);
+                    if (subIndex > -1) {
+                        this.plugin.settings.categories.splice(subIndex, 1);
+                    }
+                }
+
+                const index = this.plugin.settings.categories.findIndex(c => c.id === category.id);
+                if (index > -1) {
+                    this.plugin.settings.categories.splice(index, 1);
+                    await this.plugin.saveSettings();
+                    this.display();
+                    new Notice(`${trans.deletedCategory} ${category.name}`);
+                }
+            }));
+    }
+
+    private async addSubcategory(parent: Category) {
+        const trans = t(this.plugin.settings.locale);
+        const id = `sub-${Date.now()}`;
+        const newCategory: Category = {
+            id,
+            name: trans.subcategory,
+            icon: parent.icon,
+            type: parent.type,
+            color: parent.color,
+            parentId: parent.id,
+        };
+
+        this.plugin.settings.categories.push(newCategory);
+        await this.plugin.saveSettings();
+        this.display();
+        new Notice(`${trans.addedNewCategory} (${parent.name})`);
     }
 
     private async addNewCategory(type: 'income' | 'expense') {

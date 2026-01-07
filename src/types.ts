@@ -8,10 +8,19 @@ export interface TransactionFilter {
     type?: 'income' | 'expense' | 'all';
     search?: string;
 }
+export interface CategoryBreakdownItem {
+    category: string;
+    name: string;
+    amount: number;
+    color: string;
+    icon: string;
+    subcategories?: CategoryBreakdownItem[];
+}
 
 export interface IDataService {
     getCurrentMonthSummary(): MonthlySummary;
     getCategoryBreakdown(year: number, month: number): Array<{ category: string; name: string; amount: number; color: string; icon: string }>;
+    getHierarchicalCategoryBreakdown(year: number, month: number): CategoryBreakdownItem[];
     getMonthlyTrends(months: number): Array<{ year: number; month: number; income: number; expense: number; balance: number }>;
     getRecentTransactions(limit: number): Transaction[];
     getFilteredTransactions(filter: TransactionFilter): Transaction[];
