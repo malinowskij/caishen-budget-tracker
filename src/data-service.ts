@@ -298,6 +298,10 @@ export class DataService {
         // Get all expense categories
         const expenseCategories = this.settings.categories.filter(c => c.type === 'expense' || c.type === 'both');
 
+        // Debug: Show which categories have parentId
+        console.debug('[Budget] getHierarchicalCategoryBreakdown - categories with parentId:',
+            expenseCategories.filter(c => c.parentId).map(c => ({ id: c.id, name: c.name, parentId: c.parentId })));
+
         // Identify parent categories (no parentId) and subcategories
         const parentCategories = expenseCategories.filter(c => !c.parentId);
         const getSubcategories = (parentId: string) => expenseCategories.filter(c => c.parentId === parentId);
@@ -666,11 +670,32 @@ export class DataService {
 
     // Find category ID from display string (icon + name)
     private findCategoryIdFromDisplay(display: string): string {
-        for (const cat of this.settings.categories) {
-            if (display.includes(cat.icon) || display.includes(cat.name)) {
+        // First, try to find exact name match (most specific)
+        // Check subcategories first (they have parentId), then parent categories
+        const subcategories = this.settings.categories.filter(c => c.parentId);
+        const parentCategories = this.settings.categories.filter(c => !c.parentId);
+
+        // Check subcategories by name first (most specific match)
+        for (const cat of subcategories) {
+            if (display.includes(cat.name)) {
                 return cat.id;
             }
         }
+
+        // Check parent categories by name
+        for (const cat of parentCategories) {
+            if (display.includes(cat.name)) {
+                return cat.id;
+            }
+        }
+
+        // Fallback: check by icon (less specific)
+        for (const cat of this.settings.categories) {
+            if (display.includes(cat.icon)) {
+                return cat.id;
+            }
+        }
+
         // Return as-is if no match (might be legacy category)
         return display.replace(/[^\w-]/g, '').toLowerCase() || 'other-expense';
     }

@@ -212,6 +212,9 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
                 this._dataService.updateSettings(this.settings);
                 this._configService.updateBudgetFolder(this.settings.budgetFolder);
                 console.debug('[Budget] Settings loaded from markdown config file');
+
+                // Refresh dashboard to show hierarchical categories with parentId
+                this.refreshDashboard();
             } else if (this.shouldMigrateConfig()) {
                 // Config file doesn't exist but we have settings - migrate
                 await this.migrateConfigToMarkdown();
