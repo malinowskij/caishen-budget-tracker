@@ -7,7 +7,8 @@
     "scripts": {
         "dev": "vite build --mode development --watch",
         "build": "vite build --mode production",
-        "check": "svelte-check --tsconfig ./tsconfig.json"
+        "check": "svelte-check --tsconfig ./tsconfig.json",
+        "lint": "eslint src/**/*.ts"
     },
     "keywords": [
         "obsidian",
@@ -18,10 +19,16 @@
     ],
     "license": "MIT",
     "devDependencies": {
+        "@eslint/js": "^9.39.2",
         "@sveltejs/vite-plugin-svelte": "^3.0.0",
         "@tsconfig/svelte": "^5.0.2",
         "@types/node": "^20.10.0",
+        "@typescript-eslint/eslint-plugin": "^8.52.0",
+        "@typescript-eslint/parser": "^8.52.0",
         "builtin-modules": "^3.3.0",
+        "eslint": "^9.39.2",
+        "eslint-plugin-obsidianmd": "^0.1.9",
+        "globals": "^17.0.0",
         "svelte": "^4.2.8",
         "svelte-check": "^3.6.0",
         "tslib": "^2.6.2",

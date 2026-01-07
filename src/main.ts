@@ -22,8 +22,8 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         // Initialize data service
         this._dataService = new DataService(this.app, this.settings);
         this.dataService = this._dataService;
-        const savedData = await this.loadData();
-        await this._dataService.loadTransactions(savedData);
+        const savedData = (await this.loadData()) as Record<string, unknown>;
+        this._dataService.loadTransactions(savedData);
 
         // Sync from markdown files after vault is ready
         this.app.workspace.onLayoutReady(async () => {
@@ -174,7 +174,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         const defaultSettings = getDefaultSettings(detectedLocale);
 
         // First, load from data.json (for backward compatibility and transactions)
-        const savedData = await this.loadData();
+        const savedData = (await this.loadData()) as Partial<BudgetPluginSettings>;
         this.settings = Object.assign({}, defaultSettings, savedData);
 
         // Ensure savingsGoals exists (migration for old settings)
@@ -212,7 +212,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
                 this._dataService.updateSettings(this.settings);
                 this._configService.updateBudgetFolder(this.settings.budgetFolder);
                 console.debug('[Budget] Settings loaded from markdown config file');
-            } else if (await this.shouldMigrateConfig()) {
+            } else if (this.shouldMigrateConfig()) {
                 // Config file doesn't exist but we have settings - migrate
                 await this.migrateConfigToMarkdown();
             }
@@ -320,7 +320,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         const existing = this.app.workspace.getLeavesOfType(DASHBOARD_VIEW_TYPE);
 
         if (existing.length > 0 && existing[0]) {
-            this.app.workspace.revealLeaf(existing[0]);
+            await this.app.workspace.revealLeaf(existing[0]);
         } else {
             const leaf = this.app.workspace.getRightLeaf(false);
             if (leaf) {
@@ -328,7 +328,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
                     type: DASHBOARD_VIEW_TYPE,
                     active: true,
                 });
-                this.app.workspace.revealLeaf(leaf);
+                await this.app.workspace.revealLeaf(leaf);
             }
         }
     }
