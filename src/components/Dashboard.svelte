@@ -12,15 +12,26 @@
     import SpendingStats from "./SpendingStats.svelte";
     import CategoryComparison from "./CategoryComparison.svelte";
     import SavingsGoals from "./SavingsGoals.svelte";
+    import InvestmentsOverview from "./InvestmentsOverview.svelte";
 
     export let plugin: IBudgetPlugin;
 
     $: trans = t(plugin.settings.locale);
-    $: summary = plugin.dataService.getCurrentMonthSummary();
+
+    // Toggle for showing excluded large expenses in stats
+    let showExcludedInStats = false;
+
     $: now = new Date();
     $: year = now.getFullYear();
     $: month = now.getMonth() + 1;
     $: monthName = trans.months[month - 1] ?? "Unknown";
+
+    // Summary with optional excluded transactions
+    $: summary = plugin.dataService.getMonthlySummary(
+        year,
+        month,
+        showExcludedInStats,
+    );
     $: breakdown = plugin.dataService.getCategoryBreakdown(year, month);
     $: hierarchicalBreakdown =
         plugin.dataService.getHierarchicalCategoryBreakdown(year, month);
@@ -28,12 +39,18 @@
     $: spentByCategory = Object.fromEntries(
         breakdown.map((b) => [b.category, b.amount]),
     );
+    $: investmentSummary = plugin.dataService.getInvestmentSummary(year, month);
+    $: investmentBreakdown = plugin.dataService.getInvestmentBreakdown(
+        year,
+        month,
+    );
 
     // Tabs
     type TabId =
         | "overview"
         | "categories"
         | "goals"
+        | "investments"
         | "analytics"
         | "transactions";
     let activeTab: TabId = "overview";
@@ -42,6 +59,7 @@
         { id: "overview", icon: "📊", labelKey: "tabOverview" },
         { id: "categories", icon: "📂", labelKey: "tabCategories" },
         { id: "goals", icon: "🎯", labelKey: "tabGoals" },
+        { id: "investments", icon: "📈", labelKey: "tabInvestments" },
         { id: "analytics", icon: "📈", labelKey: "tabAnalytics" },
         { id: "transactions", icon: "📝", labelKey: "tabTransactions" },
     ];
@@ -66,12 +84,24 @@
         plugin.openTransactionModal("income");
     }
 
+    function addInvestment() {
+        plugin.openTransactionModal("investment");
+    }
+
     function refresh() {
         summary = plugin.dataService.getCurrentMonthSummary();
         breakdown = plugin.dataService.getCategoryBreakdown(year, month);
         hierarchicalBreakdown =
             plugin.dataService.getHierarchicalCategoryBreakdown(year, month);
         trends = plugin.dataService.getMonthlyTrends(6);
+        investmentSummary = plugin.dataService.getInvestmentSummary(
+            year,
+            month,
+        );
+        investmentBreakdown = plugin.dataService.getInvestmentBreakdown(
+            year,
+            month,
+        );
         filteredTransactions =
             Object.keys(filter).length > 0
                 ? plugin.dataService.getFilteredTransactions(filter)
@@ -83,7 +113,7 @@
         updates: {
             date: string;
             amount: number;
-            type: "income" | "expense";
+            type: "income" | "expense" | "investment";
             category: string;
             description: string;
             currency: string;
@@ -113,11 +143,20 @@
         <button class="mod-cta" on:click={addExpense}>{trans.addExpense}</button
         >
         <button on:click={addIncome}>{trans.addIncome}</button>
+        <button on:click={addInvestment}>{trans.addInvestment}</button>
         <button
             class="settings-btn"
             on:click={() => plugin.openSettings()}
             title={trans.settings}>⚙️</button
         >
+    </div>
+
+    <!-- Toggle for large expenses -->
+    <div class="excluded-toggle">
+        <label class="toggle-label">
+            <input type="checkbox" bind:checked={showExcludedInStats} />
+            <span>{trans.showExcludedInStats}</span>
+        </label>
     </div>
 
     <!-- Summary Cards - Always visible -->
@@ -215,6 +254,16 @@
                     onEdit={(goal) => plugin.openSavingsGoalModal(goal)}
                     onAddFunds={(goalId, amount) =>
                         plugin.addToSavingsGoal(goalId, amount)}
+                />
+            </div>
+        {:else if activeTab === "investments"}
+            <div class="budget-section">
+                <h2>{trans.investments}</h2>
+                <InvestmentsOverview
+                    breakdown={investmentBreakdown}
+                    totalInvested={investmentSummary.totalInvested}
+                    {trans}
+                    currency={plugin.settings.defaultCurrency}
                 />
             </div>
         {:else if activeTab === "analytics"}

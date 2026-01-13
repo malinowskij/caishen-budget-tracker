@@ -136,11 +136,18 @@ export interface Translations {
         otherExpense: string;
         salary: string;
         freelance: string;
-        investment: string;
+        investmentIncome: string;
         gift: string;
         otherIncome: string;
         newExpense: string;
         newIncome: string;
+        // Investment categories
+        stocks: string;
+        crypto: string;
+        realEstate: string;
+        funds: string;
+        otherInvestment: string;
+        newInvestment: string;
     };
 
     // Analytics
@@ -192,6 +199,23 @@ export interface Translations {
     tabGoals: string;
     tabAnalytics: string;
     tabTransactions: string;
+    tabInvestments: string;
+
+    // Investments
+    investment: string;
+    investments: string;
+    addInvestment: string;
+    investmentCategories: string;
+    totalInvested: string;
+    investmentBreakdown: string;
+    noInvestmentsYet: string;
+    addInvestmentCategory: string;
+
+    // Large expenses
+    excludeFromStats: string;
+    excludeFromStatsDesc: string;
+    largeExpense: string;
+    showExcludedInStats: string;
 }
 
 export const translations: Record<Locale, Translations> = {
@@ -330,11 +354,18 @@ export const translations: Record<Locale, Translations> = {
             otherExpense: 'Other expenses',
             salary: 'Salary',
             freelance: 'Freelance',
-            investment: 'Investments',
+            investmentIncome: 'Investment income',
             gift: 'Gift',
             otherIncome: 'Other income',
             newExpense: 'New expense',
             newIncome: 'New income',
+            // Investment categories
+            stocks: 'Stocks',
+            crypto: 'Crypto',
+            realEstate: 'Real Estate',
+            funds: 'Funds',
+            otherInvestment: 'Other investment',
+            newInvestment: 'New investment',
         },
 
         // Analytics
@@ -386,6 +417,23 @@ export const translations: Record<Locale, Translations> = {
         tabGoals: 'Goals',
         tabAnalytics: 'Analytics',
         tabTransactions: 'Transactions',
+        tabInvestments: 'Investments',
+
+        // Investments
+        investment: 'Investment',
+        investments: '📈 Investments',
+        addInvestment: '📈 Add Investment',
+        investmentCategories: '📈 Investment Categories',
+        totalInvested: 'Total Invested',
+        investmentBreakdown: '📈 Investments by Category',
+        noInvestmentsYet: 'No investments yet. Add your first one!',
+        addInvestmentCategory: '➕ Add investment category',
+
+        // Large expenses
+        excludeFromStats: 'Exclude from statistics',
+        excludeFromStatsDesc: 'Large expense excluded from monthly averages',
+        largeExpense: 'Large expense',
+        showExcludedInStats: 'Include large expenses in stats',
     },
 
     pl: {
@@ -523,11 +571,18 @@ export const translations: Record<Locale, Translations> = {
             otherExpense: 'Inne wydatki',
             salary: 'Wynagrodzenie',
             freelance: 'Freelance',
-            investment: 'Inwestycje',
+            investmentIncome: 'Przychód z inwestycji',
             gift: 'Prezent',
             otherIncome: 'Inne przychody',
             newExpense: 'Nowy wydatek',
             newIncome: 'Nowy przychód',
+            // Investment categories
+            stocks: 'Akcje',
+            crypto: 'Kryptowaluty',
+            realEstate: 'Nieruchomości',
+            funds: 'Fundusze',
+            otherInvestment: 'Inne inwestycje',
+            newInvestment: 'Nowa inwestycja',
         },
 
         // Analytics
@@ -579,6 +634,23 @@ export const translations: Record<Locale, Translations> = {
         tabGoals: 'Cele',
         tabAnalytics: 'Analityka',
         tabTransactions: 'Transakcje',
+        tabInvestments: 'Inwestycje',
+
+        // Investments
+        investment: 'Inwestycja',
+        investments: '📈 Inwestycje',
+        addInvestment: '📈 Dodaj inwestycję',
+        investmentCategories: '📈 Kategorie inwestycji',
+        totalInvested: 'Łącznie zainwestowano',
+        investmentBreakdown: '📈 Inwestycje wg kategorii',
+        noInvestmentsYet: 'Brak inwestycji. Dodaj pierwszą!',
+        addInvestmentCategory: '➕ Dodaj kategorię inwestycji',
+
+        // Large expenses
+        excludeFromStats: 'Wyklucz ze statystyk',
+        excludeFromStatsDesc: 'Duży wydatek wykluczony ze średnich miesięcznych',
+        largeExpense: 'Duży wydatek',
+        showExcludedInStats: 'Uwzględnij duże wydatki w statystykach',
     },
 };
 

@@ -5,7 +5,7 @@ export interface TransactionFilter {
     dateFrom?: string;
     dateTo?: string;
     category?: string;
-    type?: 'income' | 'expense' | 'all';
+    type?: 'income' | 'expense' | 'investment' | 'all';
     search?: string;
 }
 export interface CategoryBreakdownItem {
@@ -19,6 +19,7 @@ export interface CategoryBreakdownItem {
 
 export interface IDataService {
     getCurrentMonthSummary(): MonthlySummary;
+    getMonthlySummary(year: number, month: number, includeExcluded?: boolean): MonthlySummary;
     getCategoryBreakdown(year: number, month: number): Array<{ category: string; name: string; amount: number; color: string; icon: string }>;
     getHierarchicalCategoryBreakdown(year: number, month: number): CategoryBreakdownItem[];
     getMonthlyTrends(months: number): Array<{ year: number; month: number; income: number; expense: number; balance: number }>;
@@ -31,14 +32,17 @@ export interface IDataService {
     // Analytics
     getYearlySummary(year: number): { year: number; months: { month: number; income: number; expense: number; balance: number }[]; totalIncome: number; totalExpense: number; balance: number; savingsRate: number };
     getAverageSpending(): { daily: number; weekly: number; monthly: number; topCategories: { category: string; name: string; icon: string; average: number }[] };
-    getCategoryTrends(months: number): Array<{ category: string; name: string; icon: string; color: string; data: { month: string; amount: number }[] }>;
+    getCategoryTrends(months: number): Array<{ category: string; name: string; icon: string; color: string; data: { month: string; amount: number }[]; subcategories?: Array<{ category: string; name: string; icon: string; color: string; data: { month: string; amount: number }[] }> }>;
     getAvailableYears(): number[];
+    // Investments
+    getInvestmentSummary(year: number, month: number): { totalInvested: number; byCategory: Record<string, number> };
+    getInvestmentBreakdown(year: number, month: number): Array<{ category: string; name: string; amount: number; color: string; icon: string }>;
 }
 
 export interface IBudgetPlugin {
     settings: BudgetPluginSettings;
     dataService: IDataService;
-    openTransactionModal(defaultType?: 'income' | 'expense'): void;
+    openTransactionModal(defaultType?: 'income' | 'expense' | 'investment'): void;
     openEditTransactionModal(transaction: Transaction): void;
     saveSettings(): Promise<void>;
     saveTransactionData(): Promise<void>;
@@ -53,11 +57,12 @@ export interface Transaction {
     id: string;
     date: string; // ISO format YYYY-MM-DD
     amount: number;
-    type: 'income' | 'expense';
+    type: 'income' | 'expense' | 'investment';
     category: string;
     description: string;
     currency: string;
     tags?: string[]; // Optional tags for additional categorization
+    excludeFromStats?: boolean; // Large expenses excluded from monthly statistics
     createdAt: string;
     updatedAt: string;
 }
@@ -67,7 +72,7 @@ export interface Category {
     id: string;
     name: string;
     icon: string;
-    type: 'income' | 'expense' | 'both';
+    type: 'income' | 'expense' | 'investment' | 'both';
     color: string;
     budgetLimit?: number; // Optional monthly budget limit
     parentId?: string; // Optional parent category for subcategories
@@ -146,15 +151,27 @@ export function getDefaultIncomeCategories(locale: Locale): Category[] {
     return [
         { id: 'salary', name: trans.defaultCategories.salary, icon: '💰', type: 'income', color: '#27ae60' },
         { id: 'freelance', name: trans.defaultCategories.freelance, icon: '💻', type: 'income', color: '#2980b9' },
-        { id: 'investment', name: trans.defaultCategories.investment, icon: '📈', type: 'income', color: '#8e44ad' },
+        { id: 'investment-income', name: trans.defaultCategories.investmentIncome, icon: '💵', type: 'income', color: '#8e44ad' },
         { id: 'gift', name: trans.defaultCategories.gift, icon: '🎁', type: 'income', color: '#e91e63' },
         { id: 'other-income', name: trans.defaultCategories.otherIncome, icon: '✨', type: 'income', color: '#00bcd4' },
     ];
 }
 
+// Get default investment categories based on locale
+export function getDefaultInvestmentCategories(locale: Locale): Category[] {
+    const trans = t(locale);
+    return [
+        { id: 'stocks', name: trans.defaultCategories.stocks, icon: '📈', type: 'investment', color: '#3498db' },
+        { id: 'crypto', name: trans.defaultCategories.crypto, icon: '₿', type: 'investment', color: '#f39c12' },
+        { id: 'real-estate', name: trans.defaultCategories.realEstate, icon: '🏠', type: 'investment', color: '#27ae60' },
+        { id: 'funds', name: trans.defaultCategories.funds, icon: '📊', type: 'investment', color: '#9b59b6' },
+        { id: 'other-investment', name: trans.defaultCategories.otherInvestment, icon: '💎', type: 'investment', color: '#1abc9c' },
+    ];
+}
+
 // Get all default categories
 export function getDefaultCategories(locale: Locale): Category[] {
-    return [...getDefaultExpenseCategories(locale), ...getDefaultIncomeCategories(locale)];
+    return [...getDefaultExpenseCategories(locale), ...getDefaultIncomeCategories(locale), ...getDefaultInvestmentCategories(locale)];
 }
 
 // Get default settings

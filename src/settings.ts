@@ -96,6 +96,17 @@ export class BudgetSettingsTab extends PluginSettingTab {
                 .setButtonText(trans.addIncomeCategory)
                 .onClick(() => this.addNewCategory('income')));
 
+        // Categories section - Investments
+        new Setting(containerEl).setName(trans.investmentCategories).setHeading();
+
+        const investmentCategories = this.plugin.settings.categories.filter(c => c.type === 'investment');
+        this.renderCategoryList(containerEl, investmentCategories, 'investment', trans);
+
+        new Setting(containerEl)
+            .addButton(button => button
+                .setButtonText(trans.addInvestmentCategory)
+                .onClick(() => this.addNewCategory('investment')));
+
         // Recurring Transactions section
         new Setting(containerEl).setName(trans.recurringTransactions).setHeading();
         this.renderRecurringList(containerEl, trans);
@@ -117,7 +128,7 @@ export class BudgetSettingsTab extends PluginSettingTab {
                 }));
     }
 
-    private renderCategoryList(containerEl: HTMLElement, categories: Category[], type: 'income' | 'expense', trans: ReturnType<typeof t>) {
+    private renderCategoryList(containerEl: HTMLElement, categories: Category[], type: 'income' | 'expense' | 'investment', trans: ReturnType<typeof t>) {
         // Separate parent categories and subcategories
         const parentCategories = categories.filter(c => !c.parentId);
         const getSubcategories = (parentId: string) => categories.filter(c => c.parentId === parentId);
@@ -244,15 +255,34 @@ export class BudgetSettingsTab extends PluginSettingTab {
         new Notice(`${trans.addedNewCategory} (${parent.name})`);
     }
 
-    private async addNewCategory(type: 'income' | 'expense') {
+    private async addNewCategory(type: 'income' | 'expense' | 'investment') {
         const trans = t(this.plugin.settings.locale);
         const id = `custom-${Date.now()}`;
+
+        let name: string;
+        let icon: string;
+        let color: string;
+
+        if (type === 'income') {
+            name = trans.defaultCategories.newIncome;
+            icon = '💵';
+            color = '#27ae60';
+        } else if (type === 'investment') {
+            name = trans.defaultCategories.newInvestment;
+            icon = '📈';
+            color = '#3498db';
+        } else {
+            name = trans.defaultCategories.newExpense;
+            icon = '💸';
+            color = '#e74c3c';
+        }
+
         const newCategory: Category = {
             id,
-            name: type === 'income' ? trans.defaultCategories.newIncome : trans.defaultCategories.newExpense,
-            icon: type === 'income' ? '💵' : '💸',
+            name,
+            icon,
             type,
-            color: type === 'income' ? '#27ae60' : '#e74c3c',
+            color,
         };
 
         this.plugin.settings.categories.push(newCategory);

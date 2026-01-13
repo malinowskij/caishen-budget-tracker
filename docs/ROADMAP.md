@@ -24,6 +24,8 @@
 - [x] Average spending statistics
 - [x] Category comparison charts
 - [x] Spending trends analysis
+- [x] **Investment tracking** - dedicated tab for tracking investments (stocks, crypto, real estate, funds)
+- [x] **Large expense exclusion** - option to exclude large one-time expenses from monthly statistics
 
 ---
 

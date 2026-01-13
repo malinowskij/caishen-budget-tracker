@@ -9,18 +9,20 @@
     export let onClose: () => void;
     export let onDelete: (() => void) | undefined = undefined;
     export let editTransaction: Transaction | null = null;
-    export let defaultType: "income" | "expense" = "expense";
+    export let defaultType: "income" | "expense" | "investment" = "expense";
 
     $: trans = t(settings.locale);
 
     // Form state - use editTransaction type if editing, otherwise use defaultType
-    let type: "income" | "expense" = editTransaction?.type ?? defaultType;
+    let type: "income" | "expense" | "investment" =
+        editTransaction?.type ?? defaultType;
     let date: string =
         editTransaction?.date ?? new Date().toISOString().split("T")[0] ?? "";
     let amount: number = editTransaction?.amount ?? 0;
     let category: string = editTransaction?.category ?? "";
     let description: string = editTransaction?.description ?? "";
     let tagsInput: string = editTransaction?.tags?.join(", ") ?? "";
+    let excludeFromStats: boolean = editTransaction?.excludeFromStats ?? false;
     let showDeleteConfirm = false;
 
     $: filteredCategories = settings.categories.filter(
@@ -63,6 +65,7 @@
             description,
             currency: settings.defaultCurrency,
             tags: tags.length > 0 ? tags : undefined,
+            excludeFromStats: excludeFromStats || undefined,
         });
     }
 
@@ -87,6 +90,7 @@
             <select bind:value={type}>
                 <option value="expense">🔴 {trans.expense}</option>
                 <option value="income">💚 {trans.income}</option>
+                <option value="investment">📈 {trans.investment}</option>
             </select>
         </div>
     </div>
@@ -175,6 +179,20 @@
             />
         </div>
     </div>
+
+    {#if type === "expense"}
+        <div class="setting-item">
+            <div class="setting-item-info">
+                <div class="setting-item-name">{trans.excludeFromStats}</div>
+                <div class="setting-item-description">
+                    {trans.excludeFromStatsDesc}
+                </div>
+            </div>
+            <div class="setting-item-control">
+                <input type="checkbox" bind:checked={excludeFromStats} />
+            </div>
+        </div>
+    {/if}
 
     {#if editTransaction && onDelete}
         {#if showDeleteConfirm}

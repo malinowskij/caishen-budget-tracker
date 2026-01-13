@@ -14,7 +14,7 @@
 
     // Form state
     let amount = transaction.amount;
-    let type: "income" | "expense" = transaction.type;
+    let type: "income" | "expense" | "investment" = transaction.type;
     let category = transaction.category;
     let description = transaction.description;
     let date = transaction.date;
@@ -62,6 +62,7 @@
         <select bind:value={type} class="inline-select type-select">
             <option value="expense">🔴</option>
             <option value="income">💚</option>
+            <option value="investment">📈</option>
         </select>
 
         <select bind:value={category} class="inline-select category-select">

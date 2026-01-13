@@ -117,8 +117,8 @@ export class DataService {
         });
     }
 
-    // Get monthly summary
-    getMonthlySummary(year: number, month: number): MonthlySummary {
+    // Get monthly summary (excludes investments from expense totals, optionally excludes large expenses)
+    getMonthlySummary(year: number, month: number, includeExcluded: boolean = false): MonthlySummary {
         const monthTransactions = this.getTransactionsForMonth(year, month);
 
         let totalIncome = 0;
@@ -126,11 +126,17 @@ export class DataService {
         const byCategory: Record<string, number> = {};
 
         for (const txn of monthTransactions) {
+            // Skip transactions excluded from stats (unless includeExcluded is true)
+            if (!includeExcluded && txn.excludeFromStats) {
+                continue;
+            }
+
             if (txn.type === 'income') {
                 totalIncome += txn.amount;
-            } else {
+            } else if (txn.type === 'expense') {
                 totalExpense += txn.amount;
             }
+            // Note: investments are not counted in income/expense totals
 
             const currentAmount = byCategory[txn.category];
             byCategory[txn.category] = (currentAmount ?? 0) + txn.amount;
@@ -247,10 +253,11 @@ export class DataService {
             for (const txn of transactions) {
                 const category = this.settings.categories.find(c => c.id === txn.category);
                 const categoryDisplay = category ? `${category.icon} ${category.name}` : txn.category;
-                const typeEmoji = txn.type === 'income' ? '💚' : '🔴';
+                const typeEmoji = txn.type === 'income' ? '💚' : txn.type === 'investment' ? '📈' : '🔴';
                 const amountSign = txn.type === 'income' ? '+' : '-';
+                const excludedMarker = txn.excludeFromStats ? ' ⚠️' : '';
 
-                content += `| ${txn.date} | ${typeEmoji} | ${categoryDisplay} | ${txn.description || '-'} | ${amountSign}${this.formatAmount(txn.amount, txn.currency)} |\n`;
+                content += `| ${txn.date} | ${typeEmoji} | ${categoryDisplay} | ${txn.description || '-'}${excludedMarker} | ${amountSign}${this.formatAmount(txn.amount, txn.currency)} |\n`;
             }
         } else {
             content += `> ${trans.noTransactionsInMonth}\n`;
@@ -270,14 +277,53 @@ export class DataService {
         return { transactions: this.transactions };
     }
 
-    // Get spending by category for current month
+    // Get investment summary for a month
+    getInvestmentSummary(year: number, month: number): { totalInvested: number; byCategory: Record<string, number> } {
+        const monthTransactions = this.getTransactionsForMonth(year, month)
+            .filter(t => t.type === 'investment');
+
+        let totalInvested = 0;
+        const byCategory: Record<string, number> = {};
+
+        for (const txn of monthTransactions) {
+            totalInvested += txn.amount;
+            const currentAmount = byCategory[txn.category];
+            byCategory[txn.category] = (currentAmount ?? 0) + txn.amount;
+        }
+
+        return { totalInvested, byCategory };
+    }
+
+    // Get investment breakdown by category for a month
+    getInvestmentBreakdown(year: number, month: number): Array<{ category: string; name: string; amount: number; color: string; icon: string }> {
+        const summary = this.getInvestmentSummary(year, month);
+        const result: Array<{ category: string; name: string; amount: number; color: string; icon: string }> = [];
+
+        for (const [categoryId, amount] of Object.entries(summary.byCategory)) {
+            const category = this.settings.categories.find(c => c.id === categoryId);
+            if (category) {
+                result.push({
+                    category: categoryId,
+                    name: category.name,
+                    amount,
+                    color: category.color,
+                    icon: category.icon,
+                });
+            }
+        }
+
+        return result.sort((a, b) => b.amount - a.amount);
+    }
+
+    // Get spending by category for current month (excludes income and investments)
     getCategoryBreakdown(year: number, month: number): Array<{ category: string; name: string; amount: number; color: string; icon: string }> {
         const summary = this.getMonthlySummary(year, month);
         const result: Array<{ category: string; name: string; amount: number; color: string; icon: string }> = [];
 
         for (const [categoryId, amount] of Object.entries(summary.byCategory)) {
             const category = this.settings.categories.find(c => c.id === categoryId);
-            if (category && category.type !== 'income') {
+            // Only include expense categories, not income or investment
+            if (category && category.type === 'expense') {
                 result.push({
                     category: categoryId,
                     name: category.name,
@@ -631,8 +677,13 @@ export class DataService {
                 if (cells.length >= 5) {
                     const [dateCell, typeCell, categoryCell, descCell, amountCell] = cells;
 
-                    // Parse type from emoji
-                    const type: 'income' | 'expense' = typeCell?.includes('💚') ? 'income' : 'expense';
+                    // Parse type from emoji - include investment type
+                    let type: 'income' | 'expense' | 'investment' = 'expense';
+                    if (typeCell?.includes('💚')) {
+                        type = 'income';
+                    } else if (typeCell?.includes('📈')) {
+                        type = 'investment';
+                    }
 
                     // Parse amount - remove sign, currency, and parse number
                     const amountMatch = amountCell?.match(/[+-]?([\d,]+\.?\d*)/);
@@ -648,8 +699,13 @@ export class DataService {
                     // Parse date
                     const date = dateCell || '';
 
-                    // Parse description
-                    const description = descCell === '-' ? '' : (descCell || '');
+                    // Parse description - check for excludeFromStats marker (⚠️)
+                    let description = descCell === '-' ? '' : (descCell || '');
+                    let excludeFromStats = false;
+                    if (description.includes('⚠️')) {
+                        excludeFromStats = true;
+                        description = description.replace('⚠️', '').trim();
+                    }
 
                     if (date && amount > 0) {
                         transactions.push({
@@ -659,6 +715,7 @@ export class DataService {
                             category: categoryId,
                             description,
                             currency,
+                            excludeFromStats: excludeFromStats || undefined,
                         });
                     }
                 }

@@ -10,7 +10,8 @@
     let dateFrom = filter.dateFrom ?? "";
     let dateTo = filter.dateTo ?? "";
     let category = filter.category ?? "";
-    let type: "income" | "expense" | "all" = filter.type ?? "all";
+    let type: "income" | "expense" | "investment" | "all" =
+        filter.type ?? "all";
     let search = filter.search ?? "";
 
     function applyFilter() {
@@ -56,6 +57,7 @@
                 <option value="all">{trans.all ?? "All"}</option>
                 <option value="expense">🔴 {trans.expense}</option>
                 <option value="income">💚 {trans.income}</option>
+                <option value="investment">📈 {trans.investment}</option>
             </select>
         </div>
 

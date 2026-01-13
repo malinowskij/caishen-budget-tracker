@@ -9,14 +9,14 @@ export class TransactionModal extends Modal {
     private onDelete: (() => void) | undefined;
     private editTransaction: Transaction | null;
     private component: TransactionForm | null = null;
-    private defaultType: 'income' | 'expense';
+    private defaultType: 'income' | 'expense' | 'investment';
 
     constructor(
         app: App,
         settings: BudgetPluginSettings,
         onSubmit: (transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => void,
         editTransaction?: Transaction,
-        defaultType?: 'income' | 'expense',
+        defaultType?: 'income' | 'expense' | 'investment',
         onDelete?: () => void
     ) {
         super(app);

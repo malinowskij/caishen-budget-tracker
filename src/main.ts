@@ -266,7 +266,7 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
         });
     }
 
-    openTransactionModal(defaultType?: 'income' | 'expense') {
+    openTransactionModal(defaultType?: 'income' | 'expense' | 'investment') {
         const modal = new TransactionModal(
             this.app,
             this.settings,
@@ -277,7 +277,8 @@ export default class BudgetTrackerPlugin extends Plugin implements IBudgetPlugin
                     this.updateStatusBar();
                     this.refreshDashboard();
                     const trans = t(this.settings.locale);
-                    const typeLabel = transactionData.type === 'income' ? trans.income : trans.expense;
+                    const typeLabel = transactionData.type === 'income' ? trans.income :
+                        transactionData.type === 'investment' ? trans.investment : trans.expense;
                     new Notice(`${trans.noticeTransactionAdded} ${typeLabel}: ${transactionData.amount} ${transactionData.currency}`);
                 })();
             },
